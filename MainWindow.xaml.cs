@@ -318,17 +318,17 @@ namespace LoggerDeviceValues
         public void System_AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
         {
             string StringForBurnToFile = "";
-            if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            else
-            {
-                StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-                StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
-                if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
-            }
+            //if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            //else
+            //{
+            //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+            //    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
+            //}
             MainParam_StreamWriter.WriteLine(StringForBurnToFile);
             try
             {
-                if (MainParam_CounterMeasure % int.Parse(TextBox_FragmentSize.Text) == 0)
+                if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
                 {
                     MainParam_StreamWriter.Flush();
                     if (MainParam_CounterMeasure_End == 0)
@@ -572,8 +572,8 @@ namespace LoggerDeviceValues
                 TextBox_FilePos.IsEnabled = true;
                 Button_GenerateNewNameFile.IsEnabled = true;
                 Button_SetPathFile.IsEnabled = true;
-                CheckBox_ValueOnly.IsEnabled = true;
-                TextBox_FragmentSize.IsEnabled = true;
+                //CheckBox_ValueOnly.IsEnabled = true;
+                //TextBox_FragmentSize.IsEnabled = true;
 
                 MainParam_CounterMeasure_End = MainParam_CounterMeasure;
                 MainChart.AxisX[0].Sections.Add(new AxisSection
@@ -631,8 +631,8 @@ namespace LoggerDeviceValues
                     TextBox_FilePos.IsEnabled = false;
                     Button_GenerateNewNameFile.IsEnabled = false;
                     Button_SetPathFile.IsEnabled = false;
-                    CheckBox_ValueOnly.IsEnabled = false;
-                    TextBox_FragmentSize.IsEnabled = false;
+                    //CheckBox_ValueOnly.IsEnabled = false;
+                    //TextBox_FragmentSize.IsEnabled = false;
 
                     MainParam_CounterMeasure_Start = MainParam_CounterMeasure;
                     MainParam_TimeStartMeasure = DateTime.Now;
@@ -681,6 +681,21 @@ namespace LoggerDeviceValues
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             System_RefreshAllChart();
+        }
+
+        private void CheckBox_BurnStringChange(object sender, RoutedEventArgs e)
+        {
+            string StringForBurnToFile = "";
+            Random rnd = new Random();
+            decimal value = (decimal)rnd.NextDouble()*3000;
+            LabDevice.DataTypes type = (LabDevice.DataTypes)rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length);
+            StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            if (CheckBox_BurnFixedPoint.IsChecked.Value) StringForBurnToFile += " " + LabDevice.ConvertFixedPoint(value, type);
+            if (CheckBox_BurnCounter.IsChecked.Value) StringForBurnToFile += " " + rnd.Next(10000);//(MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString();
+            if (CheckBox_BurnDate.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("dd.MM.yyyy");
+            if (CheckBox_BurnTime.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
+            if (CheckBox_BurnRAW.IsChecked.Value) StringForBurnToFile += " " + "[RAW]";
+            TextBlock_BurnString.Text = StringForBurnToFile;
         }
 
         //private void CheckBox_AnimatedGraph_Click(object sender, RoutedEventArgs e)

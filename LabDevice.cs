@@ -57,6 +57,7 @@ namespace LoggerDeviceValues
                 if (Math.Abs(value) < (decimal)1e-3 && Math.Abs(value) >= (decimal)1e-6) output = string.Format("{0:0.######}", value * (decimal)1e6) + " u";
                 if (Math.Abs(value) < (decimal)1e-6 && Math.Abs(value) >= (decimal)1e-9) output = string.Format("{0:0.######}", value * (decimal)1e9) + " n";
                 if (Math.Abs(value) < (decimal)1e-9 && Math.Abs(value) >= (decimal)1e-12) output = string.Format("{0:0.######}", value * (decimal)1e12) + " p";
+                if (value == 0) output = "0";
                 if (type == DataTypes.Freq) return output += "Hz";
                 if (type == DataTypes.Voltage) return output += "V";
                 if (type == DataTypes.Resistance) return output += "Om";

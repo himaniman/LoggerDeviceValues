@@ -8,7 +8,7 @@
         xmlns:geared="clr-namespace:LiveCharts.Geared;assembly=LiveCharts.Geared"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Logger Device Values v0.25" Height="500" Width="850" Background="White">
+        Title="Logger Device Values v0.3 filename" Height="600" Width="900" Background="White">
     <DockPanel>
         <!--<Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
@@ -31,65 +31,82 @@
                 <ColumnDefinition Width="6*"/>
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MinWidth="280">
                     <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                    </Grid.RowDefinitions>
-                    <ComboBox Grid.Row="0" Grid.Column="0" Name="ComboBox_Interfaces" Margin="10,10,5,0" VerticalAlignment="Top" DropDownOpened="ComboBox_Interfaces_DropDownOpened" SelectionChanged="ComboBox_Interfaces_SelectionChanged" SelectedIndex="0">
-                        <ComboBoxItem Content="Интерфейсы"/>
-                    </ComboBox>
-                    <ComboBox Grid.Row="0" Grid.Column="1" Name="ComboBox_Devices" Margin="5,10,10,0" VerticalAlignment="Top" DropDownOpened="ComboBox_Devices_DropDownOpened" SelectionChanged="ComboBox_Devices_SelectionChanged" SelectedIndex="0" Background="{x:Null}">
-                        <ComboBoxItem Content="Устройства"/>
-                    </ComboBox>
-                    <TextBox Grid.Row="1" Grid.ColumnSpan="2" Name="TextBox_FilePos" Text="FileName" Margin="10,10,10,10" ToolTip="По умолчанию файл будет сохранен на рабочий стол"/>
-                    <Button Grid.Row="2" Grid.Column="0" Name="Button_GenerateNewNameFile" Content="Новое имя" Margin="10,10,5,10" Click="Button_GenerateNewNameFile_Click"/>
-                    <Button Grid.Row="2" Grid.Column="1" Name="Button_SetPathFile" Content="Указать путь вручную" Margin="5,10,10,10" Click="Button_SetPathFile_Click"/>
-                    <CheckBox Grid.Row="3" Grid.Column="0" Name="CheckBox_ValueOnly" Content="Запись только данных" Margin="10,10,5,10" VerticalAlignment="Center" IsChecked="False" ToolTip="Записывать только столбец в экспоненциальном виде, или добавлять число с плавающей точкой, время, RAW данные"/>
-                    <RadioButton Grid.Row="4" Grid.Column="0" Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="10,10,5,10" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
-                    <RadioButton Grid.Row="4" Grid.Column="1" Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,10,10,10" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
-                    <Grid Grid.Row="3" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
+                        <ComboBox Grid.Row="0" Grid.Column="0" Name="ComboBox_Interfaces" Margin="10,10,5,0" VerticalAlignment="Top" DropDownOpened="ComboBox_Interfaces_DropDownOpened" SelectionChanged="ComboBox_Interfaces_SelectionChanged" SelectedIndex="0">
+                            <ComboBoxItem Content="Интерфейсы"/>
+                        </ComboBox>
+                        <ComboBox Grid.Row="0" Grid.Column="1" Name="ComboBox_Devices" Margin="5,10,10,0" VerticalAlignment="Top" DropDownOpened="ComboBox_Devices_DropDownOpened" SelectionChanged="ComboBox_Devices_SelectionChanged" SelectedIndex="0" Background="{x:Null}">
+                            <ComboBoxItem Content="Устройства"/>
+                        </ComboBox>
+                        <RadioButton Grid.Row="1" Grid.Column="0" Name="RadioButton_BurnTXT" Content="Тип файла TXT" Margin="10,10,5,10" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби"/>
+                        <RadioButton Grid.Row="1" Grid.Column="1" Name="RadioButton_BurnCSV" Content="Тип файла CSV" Margin="5,10,10,10" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби"/>
+                        <TextBox Grid.Row="2" Grid.ColumnSpan="2" Name="TextBox_FilePos" Text="FileName" Margin="10,10,10,10" ToolTip="По умолчанию файл будет сохранен на рабочий стол"/>
+                        <Button Grid.Row="3" Grid.Column="0" Name="Button_GenerateNewNameFile" Content="Новое имя" Margin="10,10,5,10" Click="Button_GenerateNewNameFile_Click"/>
+                        <Button Grid.Row="3" Grid.Column="1" Name="Button_SetPathFile" Content="Указать путь вручную" Margin="5,10,10,10" Click="Button_SetPathFile_Click"/>
+                        <!--<CheckBox Grid.Row="3" Grid.Column="0" Name="CheckBox_ValueOnly" Content="Запись только данных" Margin="10,10,5,10" VerticalAlignment="Center" IsChecked="False" ToolTip="Записывать только столбец в экспоненциальном виде, или добавлять число с плавающей точкой, время, RAW данные"/>-->
+                        <Separator Grid.Row="4" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="10,0,10,0"></Separator>
+                        <RadioButton Grid.Row="4" Grid.Column="0" Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="10,10,5,10" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
+                        <RadioButton Grid.Row="4" Grid.Column="1" Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,10,10,10" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
+                        <!--<Grid Grid.Row="3" Grid.Column="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="4*"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0" Name="TextBox_FragmentSize" Text="50" Margin="10,5,0,0" TextAlignment="Left" MaxLength="5" PreviewTextInput="TextBox_FragmentSize_PreviewTextInput" ToolTip="Размер блока в выборках который записывается в файл принудительно (не рекомендуется ставить значение меньше 20 и больше 1000)" Height="24"/>
                         <TextBlock Grid.Column="1" Name="Label_FragmentSize" Text="Каждые Х выборок принудительно в файл" TextWrapping="Wrap" TextAlignment="Left" Margin="5,10,5,0" VerticalAlignment="Top" FontSize="9" ToolTip="Размер блока в выборках который записывается в файл принудительно (не рекомендуется ставить значение меньше 20 и больше 1000)"/>
+                    </Grid>-->
+                        <!--<TextBlock Grid.Row="5" Grid.Column="1" Name="TextBlock_StatusBurn" Text="Статус записи в файл" Margin="5,5,10,0" VerticalAlignment="Center" FontSize="9"/>-->
+                        <Separator Grid.Row="5" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="10,0,10,0"></Separator>
+                        <RadioButton Grid.Row="5" Grid.Column="0" Name="RadioButton_QtyMeas" GroupName="TimerOrQty" Margin="10,10,5,10" Content="Кол-во измерений" VerticalAlignment="Center" Checked="RadioButton_QtyMeas_Checked"/>
+                        <RadioButton Grid.Row="5" Grid.Column="1" Name="RadioButton_Timer" GroupName="TimerOrQty" Margin="5,10,10,10" Content="Таймер" VerticalAlignment="Center" IsChecked="True" Checked="RadioButton_Timer_Checked"/>
+                        <TextBox Grid.Row="6" Grid.Column="0" Name="TextBox_QtyMeas" Text="100" Margin="10,10,5,10" TextAlignment="Left" MaxLength="10" PreviewTextInput="TextBox_QtyMeas_PreviewTextInput" IsEnabled="False"/>
+                        <!--<xctk:DateTimePicker Grid.Row="7" Grid.Column="0" Name="DateTimePicker_deadline" Margin="10,10,5,10" AllowTextInput="False" Format="Custom" TimeFormat="LongTime" FormatString="dd/MM HH:mm" IsEnabled="False"/>-->
+                        <xctk:TimeSpanUpDown Grid.Row="6" Grid.Column="1" Name="TimeSpanUpDown_Timer" Margin="5,10,10,10" Value="1:0:0" Minimum="0:1:0"/>
+                        <Button Grid.Row="7" Grid.ColumnSpan="2" Name="Button_FileBurnStart" Content="Начать запись" Margin="10,10,10,10" Click="Button_FileBurnStart_Click" Background="#FFDDDDDD"/>
+                        <ProgressBar Grid.Row="8" Grid.ColumnSpan="2" Margin="10,10,10,10" Minimum="0" Maximum="100" Value="0" Name="ProgressBar_Status"/>
+                        <TextBlock Grid.Row="8" Grid.ColumnSpan="2" Name="TextBlock_ETA" Margin="10,10,10,10" Text="Время/Измерения до окончания" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Separator Grid.Row="9" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="10,0,10,0"></Separator>
                     </Grid>
-                    <!--<TextBlock Grid.Row="5" Grid.Column="1" Name="TextBlock_StatusBurn" Text="Статус записи в файл" Margin="5,5,10,0" VerticalAlignment="Center" FontSize="9"/>-->
-                    <Separator Grid.Row="5" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="10,0,10,0"></Separator>
-                    <RadioButton Grid.Row="5" Grid.Column="0" Name="RadioButton_QtyMeas" GroupName="TimerOrQty" Margin="10,10,5,10" Content="Кол-во измерений" VerticalAlignment="Center" Checked="RadioButton_QtyMeas_Checked"/>
-                    <RadioButton Grid.Row="5" Grid.Column="1" Name="RadioButton_Timer" GroupName="TimerOrQty" Margin="5,10,10,10" Content="Таймер" VerticalAlignment="Center" IsChecked="True" Checked="RadioButton_Timer_Checked"/>
-                    <TextBox Grid.Row="6" Grid.Column="0" Name="TextBox_QtyMeas" Text="100" Margin="10,10,5,10" TextAlignment="Left" MaxLength="10" PreviewTextInput="TextBox_QtyMeas_PreviewTextInput" IsEnabled="False"/>
-                    <!--<xctk:DateTimePicker Grid.Row="7" Grid.Column="0" Name="DateTimePicker_deadline" Margin="10,10,5,10" AllowTextInput="False" Format="Custom" TimeFormat="LongTime" FormatString="dd/MM HH:mm" IsEnabled="False"/>-->
-                    <xctk:TimeSpanUpDown Grid.Row="6" Grid.Column="1" Name="TimeSpanUpDown_Timer" Margin="5,10,10,10" Value="1:0:0" Minimum="0:1:0"/>
-                    <Button Grid.Row="7" Grid.ColumnSpan="2" Name="Button_FileBurnStart" Content="Начать запись" Margin="10,10,10,10" Click="Button_FileBurnStart_Click" Background="#FFDDDDDD"/>
-                    <ProgressBar Grid.Row="8" Grid.ColumnSpan="2" Margin="10,10,10,10" Minimum="0" Maximum="100" Value="0" Name="ProgressBar_Status"/>
-                    <TextBlock Grid.Row="8" Grid.ColumnSpan="2" Name="TextBlock_ETA" Margin="10,10,10,10" Text="Время/Измерения до окончания" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                </Grid>
                 </ScrollViewer>
             </Grid>
-            <TabControl Grid.Column="1" Background="{x:Null}">
+            <TabControl Grid.Column="1" Background="{x:Null}" MinWidth="300">
                 <TabItem Header="Текущие измерения">
                     <Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="8*"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="*"/>
                             <RowDefinition Height="85"/>
                         </Grid.RowDefinitions>
-                        <lvc:CartesianChart Grid.Row="0" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" MouseDoubleClick="MainChart_MouseDoubleClick">
+                        <Grid Grid.Row="0" Margin="10,10,10,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" Content="Старт получения данных" GroupName="ToggleGroup" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True"/>
+                            <RadioButton Grid.Column="1" Name="RadioButton_StopMeasure" Content="Остановка получения данных" GroupName="ToggleGroup" Style="{StaticResource {x:Type ToggleButton}}"/>
+                            <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
+                        </Grid>
+                        <lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" MouseDoubleClick="MainChart_MouseDoubleClick">
                             <lvc:CartesianChart.Series>
                                 <geared:GLineSeries Values="{Binding MainChartValues}" 
                                 PointGeometry="{x:Null}" 
@@ -109,15 +126,18 @@
                                     </lvc:Axis.Separator>
                                     <!--<lvc:Axis.Sections>
                                         <lvc:AxisSection Value="1200" StrokeThickness="3" Stroke="#F9D648">
-                                            --><!--<lvc:AxisSection.Fill>
+                                            -->
+                                    <!--<lvc:AxisSection.Fill>
                                                 <SolidColorBrush Color="#A3A3FF" Opacity=".4"></SolidColorBrush>
-                                            </lvc:AxisSection.Fill>--><!--
+                                            </lvc:AxisSection.Fill>-->
+                                    <!--
                                         </lvc:AxisSection>
                                     </lvc:Axis.Sections>-->
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                         </lvc:CartesianChart>
-                        <Grid Grid.Row="1">
+                        <TextBlock Grid.Row="1" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16"/>
+                        <Grid Grid.Row="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="26"/>
                                 <RowDefinition Height="26"/>
@@ -182,6 +202,44 @@
                         </lvc:CartesianChart>
                         <Button Content="Button" HorizontalAlignment="Left" Margin="182,64,0,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
                     </Grid>
+                </TabItem>
+                <TabItem Header="Настройки">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <GroupBox Header="Настройка записываемых данных в файл" Margin="5,0,5,0">
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Top" Margin="5,5,5,5" BorderBrush="Black" BorderThickness="1">
+                                        <TextBlock Name="TextBlock_BurnString" Margin="5,5,5,5" HorizontalAlignment="Center" Text="TEXT"/>
+                                    </Border>
+                                    <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5,5,5,5">
+                                        <CheckBox Name="CheckBox_BurnFixedPoint" Content="Плавающая точка" Margin="5,0,5,0" IsChecked="True" Click="CheckBox_BurnStringChange"/>
+                                        <CheckBox Name="CheckBox_BurnCounter" Content="Номер измерения" Margin="5,0,5,0" IsChecked="True" Click="CheckBox_BurnStringChange"/>
+                                        <CheckBox Name="CheckBox_BurnDate" Content="Дата" Margin="5,0,5,0" IsChecked="True" Click="CheckBox_BurnStringChange"/>
+                                        <CheckBox Name="CheckBox_BurnTime" Content="Время" Margin="5,0,5,0" IsChecked="True" Click="CheckBox_BurnStringChange"/>
+                                        <CheckBox Name="CheckBox_BurnRAW" Content="RAW данные" Margin="5,0,5,0" IsChecked="True" Click="CheckBox_BurnStringChange"/>
+                                    </WrapPanel>
+                                </DockPanel>
+                            </GroupBox>
+                            <GroupBox Header="Период принудительной записи в файл" Margin="5,0,5,0">
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="Каждые Х выборок принудительно записывать в файл" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
+                                    <Slider DockPanel.Dock="Left" Name="Slider_FragmentSize" Margin="5,0,5,0" Minimum="10" Maximum="400" Value="50" IsSnapToTickEnabled="True" Ticks="10,50,100,200,400" AutoToolTipPlacement="TopLeft" LargeChange="100" TickPlacement="BottomRight"/>
+                                </DockPanel>
+                            </GroupBox>
+                            <GroupBox Header="Усреднение частоты получения данных" Margin="5,0,5,0">
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="По Х выборкам усредняется частота получаемых значений" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
+                                    <Slider DockPanel.Dock="Left" Name="Slider_MeanPointFreq" Margin="5,0,5,0" Value="10" Minimum="1" Maximum="400" IsSnapToTickEnabled="True" Ticks="1,10,50,200,400" TickPlacement="BottomRight" AutoToolTipPlacement="TopLeft"/>
+                                </DockPanel>
+                            </GroupBox>
+                            <GroupBox Grid.Row="5" Margin="5,5,5,5" Header="Директория для автоматического сохранения">
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Margin="10,5,10,5" Width="150" Content="Указать путь"/>
+                                    <TextBox Margin="10,5,10,5" Text="path"/>
+                                </DockPanel>
+                            </GroupBox>
+                        </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
             </TabControl>
         </Grid>
