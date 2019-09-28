@@ -263,11 +263,39 @@ namespace LoggerDeviceValues
                 }
             }
 
+            if (MainChartValues.Count == 0)
+            {
+                SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
+                switch (type)
+                {
+                    case LabDevice.DataTypes.Current:
+                        NewColor= new SolidColorBrush(Colors.Red); break;
+                    case LabDevice.DataTypes.Voltage:
+                        NewColor = new SolidColorBrush(Colors.Blue); break;
+                    case LabDevice.DataTypes.Capacity:
+                        NewColor = new SolidColorBrush(Colors.Orange); break;
+                    case LabDevice.DataTypes.Temperature:
+                        NewColor = new SolidColorBrush(Colors.Gold); break;
+                    case LabDevice.DataTypes.Freq:
+                        NewColor = new SolidColorBrush(Colors.Green); break;
+                }
+                MainChart.Series.Clear();
+                MainChart.Series.Add(new GLineSeries
+                {
+                    Values = MainChartValues,
+                    Title = type.ToString(),
+                    StrokeThickness=2,
+                    Stroke = NewColor
+                });
+            }
+            
             MainChartValues.Add(new MeasureModel
             {
                 Label = MainParam_CounterMeasure++,
                 Value = (double)value
             });
+
+            MainChart.AxisX[0].MaxValue = 100;
 
             MainParam_Values.Add(value);
 
@@ -392,7 +420,7 @@ namespace LoggerDeviceValues
 
             DataContext = this;
             MainChartValues = new GearedValues<MeasureModel>();
-            MainChartValues.WithQuality(Quality.Low);
+            MainChartValues.WithQuality(Quality.Medium);
             AllChartValues = new GearedValues<MeasureModel>();
             AllChartValues.WithQuality(Quality.Low);
 

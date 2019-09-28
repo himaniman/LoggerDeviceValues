@@ -106,14 +106,14 @@
                             <RadioButton Grid.Column="1" Name="RadioButton_StopMeasure" Content="Остановка получения данных" GroupName="ToggleGroup" Style="{StaticResource {x:Type ToggleButton}}"/>
                             <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
                         </Grid>
-                        <lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" MouseDoubleClick="MainChart_MouseDoubleClick">
-                            <lvc:CartesianChart.Series>
-                                <geared:GLineSeries Values="{Binding MainChartValues}" 
+                        <lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="True" MouseDoubleClick="MainChart_MouseDoubleClick">
+                            <!--<lvc:CartesianChart.Series>
+                                <geared:GLineSeries Values="{Binding MainChartValues}" Title=""
                                 PointGeometry="{x:Null}" 
                                 LineSmoothness="0"
                                 StrokeThickness="2" 
                                 Fill="Transparent"/>
-                            </lvc:CartesianChart.Series>
+                            </lvc:CartesianChart.Series>-->
                             <!--<lvc:CartesianChart.AxisY>
                                 <lvc:Axis 
                                     LabelFormatter="{Binding YFormatter}"
