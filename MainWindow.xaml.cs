@@ -49,8 +49,11 @@ namespace LoggerDeviceValues
 
         public GearedValues<MeasureModel> MainChartValues { get; set; }
         public GearedValues<MeasureModel> AllChartValues { get; set; }
+        public Func<double, string> DateTimeFormatter { get; set; }
         public Func<double, string> YFormatter { get; set; }
         public Func<double, string> AllYFormatter { get; set; }
+        public double AxisStep { get; set; }
+        public double AxisUnit { get; set; }
         public int MainParam_CounterMeasure;
         public int MainParam_CounterMeasure_Start;
         public int MainParam_CounterMeasure_End;
@@ -141,29 +144,29 @@ namespace LoggerDeviceValues
                 TextBlock_Status.Text = "Ошибка подключения к COM порту "+ex.ToString().Take(50);
                 return;
             }
-            try
-            {
-                //TextBlock_Status.Text = "Try connect to port " + Properties.Settings.Default.COMName;
-                //if (MainParam_SerialPort.IsOpen) MainParam_SerialPort.Close();
+            //try
+            //{
+            //    //TextBlock_Status.Text = "Try connect to port " + Properties.Settings.Default.COMName;
+            //    //if (MainParam_SerialPort.IsOpen) MainParam_SerialPort.Close();
 
-                //MainParam_SerialPort.PortName = Properties.Settings.Default.COMName;
-                //MainParam_SerialPort.Handshake = Handshake.None;
-                //MainParam_SerialPort.Open();
+            //    //MainParam_SerialPort.PortName = Properties.Settings.Default.COMName;
+            //    //MainParam_SerialPort.Handshake = Handshake.None;
+            //    //MainParam_SerialPort.Open();
 
-                //if (MainParam_SerialPort.IsOpen)
-                //{
-                //    TextBlock_Status.Text = "COM port is open (" + Properties.Settings.Default.COMName + ")";
-                //    Label_StatusCOM.Content = "Подключено " + Properties.Settings.Default.COMName + " " + Properties.Settings.Default.COMBaudrate.ToString() + "bps";
-                //    Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGreen);
-                //    ComboBox_COMPorts.SelectedValue = Properties.Settings.Default.COMName;
-                //}
-            }
-            catch
-            {
-                //TextBlock_Status.Text = "COM port connect error (" + Properties.Settings.Default.COMName + ")";
-                //Label_StatusCOM.Content = "Не подключено";
-                //Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGray);
-            }
+            //    //if (MainParam_SerialPort.IsOpen)
+            //    //{
+            //    //    TextBlock_Status.Text = "COM port is open (" + Properties.Settings.Default.COMName + ")";
+            //    //    Label_StatusCOM.Content = "Подключено " + Properties.Settings.Default.COMName + " " + Properties.Settings.Default.COMBaudrate.ToString() + "bps";
+            //    //    Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGreen);
+            //    //    ComboBox_COMPorts.SelectedValue = Properties.Settings.Default.COMName;
+            //    //}
+            //}
+            //catch
+            //{
+            //    //TextBlock_Status.Text = "COM port connect error (" + Properties.Settings.Default.COMName + ")";
+            //    //Label_StatusCOM.Content = "Не подключено";
+            //    //Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGray);
+            //}
         }
 
         void System_SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -263,50 +266,11 @@ namespace LoggerDeviceValues
                 }
             }
 
-            if (MainChartValues.Count == 0)
-            {
-                SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
-                switch (type)
-                {
-                    case LabDevice.DataTypes.Current:
-                        NewColor= new SolidColorBrush(Colors.Red); break;
-                    case LabDevice.DataTypes.Voltage:
-                        NewColor = new SolidColorBrush(Colors.Blue); break;
-                    case LabDevice.DataTypes.Capacity:
-                        NewColor = new SolidColorBrush(Colors.Orange); break;
-                    case LabDevice.DataTypes.Temperature:
-                        NewColor = new SolidColorBrush(Colors.Gold); break;
-                    case LabDevice.DataTypes.Freq:
-                        NewColor = new SolidColorBrush(Colors.Green); break;
-                }
-                MainChart.Series.Clear();
-                MainChart.Series.Add(new GLineSeries
-                {
-                    Values = MainChartValues,
-                    Title = type.ToString(),
-                    StrokeThickness=2,
-                    Stroke = NewColor
-                });
-            }
-            
-            MainChartValues.Add(new MeasureModel
-            {
-                Label = MainParam_CounterMeasure++,
-                Value = (double)value
-            });
-
-            MainChart.AxisX[0].MaxValue = 100;
-
-            MainParam_Values.Add(value);
+            System_AddValueToGraph(value, type);
 
             if ((bool)RadioButton_FixedPoint.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertFixedPoint(value, type);
             if ((bool)RadioButton_Scientific.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertScientific(value, type);
             TextBlock_CounterMeasure.Text = MainParam_CounterMeasure.ToString();
-
-            while (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) && int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString())!=1)
-            {
-                MainChartValues.RemoveAt(0);
-            }
 
             //if (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()))
             //    MainChartValues.RemoveAt(0) = (ChartValues<MeasureModel>)MainChartValues.Skip(MainChartValues.Count - int.Parse(((ComboBoxItem)ComboBox_SizeGraph.SelectedItem).Tag.ToString()));
@@ -340,6 +304,55 @@ namespace LoggerDeviceValues
                         Button_FileBurnStart_Click(null, null);
                     }
                 }
+            }
+        }
+
+        public void System_AddValueToGraph(decimal value, LabDevice.DataTypes type)
+        {
+            if (MainChartValues.Count == 0)
+            {
+                SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
+                switch (type)
+                {
+                    case LabDevice.DataTypes.Current:
+                        NewColor = new SolidColorBrush(Colors.Red); break;
+                    case LabDevice.DataTypes.Voltage:
+                        NewColor = new SolidColorBrush(Colors.Blue); break;
+                    case LabDevice.DataTypes.Capacity:
+                        NewColor = new SolidColorBrush(Colors.Orange); break;
+                    case LabDevice.DataTypes.Temperature:
+                        NewColor = new SolidColorBrush(Colors.Gold); break;
+                    case LabDevice.DataTypes.Freq:
+                        NewColor = new SolidColorBrush(Colors.Green); break;
+                }
+                MainChart.Series.Clear();
+                MainChart.Series.Add(new GLineSeries
+                {
+                    Values = MainChartValues,
+                    Title = type.ToString(),
+                    StrokeThickness = 2,
+                    LineSmoothness = 0,
+                    Stroke = NewColor
+                });
+                MainChartValues.Quality = Quality.Highest;
+            }
+
+            
+            MainChartValues.Add(new MeasureModel
+            {
+                DateTime = DateTime.Now,
+                Value = (double)value
+            });
+
+            //MainChart.AxisX[0].MaxValue = 100;
+
+            MainParam_Values.Add(value);
+
+            AxisStep = TimeSpan.FromSeconds(1).Ticks;
+
+            while (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) && int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) != 1)
+            {
+                MainChartValues.RemoveAt(0);
             }
         }
 
@@ -377,19 +390,27 @@ namespace LoggerDeviceValues
             
         }
 
+        public void System_LogMessage(String _text)
+        {
+            ListBox_Log.Items.Add(new ListBoxItem()
+            {
+                Content = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + " " + _text,
+            });
+        }
+
         public void System_RefreshAllChart()
         {
-            List<MeasureModel> ListForAdding = new List<MeasureModel>();
-            for (int i=0;i< MainParam_Values.Count; i+=2)
-            {
-                MeasureModel a = new MeasureModel {
-                    Label = i,
-                    Value = (double)MainParam_Values[i]
-                };
-                ListForAdding.Add(a);
-            }
-            AllChartValues.Clear();
-            AllChartValues.AddRange(ListForAdding);
+            //List<MeasureModel> ListForAdding = new List<MeasureModel>();
+            //for (int i=0;i< MainParam_Values.Count; i+=2)
+            //{
+            //    MeasureModel a = new MeasureModel {
+            //        Label = i,
+            //        Value = (double)MainParam_Values[i]
+            //    };
+            //    ListForAdding.Add(a);
+            //}
+            //AllChartValues.Clear();
+            //AllChartValues.AddRange(ListForAdding);
         }
 
         public void System_ClearAllData()
@@ -414,9 +435,10 @@ namespace LoggerDeviceValues
             //MainParam_SerialPort = new SerialPort(Properties.Settings.Default.COMName, Properties.Settings.Default.COMBaudrate, Parity.None, 8, StopBits.One);
             //MainParam_SerialPort.DataReceived += new SerialDataReceivedEventHandler(System_SerialDataReceived);
             var mapper = Mappers.Xy<MeasureModel>()
-               .X(model => model.Label)
+               .X(model => model.DateTime.Ticks)
                .Y(model => model.Value);
             Charting.For<MeasureModel>(mapper);
+            
 
             DataContext = this;
             MainChartValues = new GearedValues<MeasureModel>();
@@ -424,9 +446,13 @@ namespace LoggerDeviceValues
             AllChartValues = new GearedValues<MeasureModel>();
             AllChartValues.WithQuality(Quality.Low);
 
+            DateTimeFormatter = value => new DateTime(Math.Abs((long)value)).ToString("mm:ss");
+            AxisStep = TimeSpan.FromSeconds(1).Ticks;
+            AxisUnit = TimeSpan.TicksPerSecond;
+
             if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
-                TextBox_FilePos.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
-            else TextBox_FilePos.Text = "Logger_Measure_"+ Properties.Settings.Default.LastConnectedDevice+ " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+                TextBox_FileName.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            else TextBox_FileName.Text = "Logger_Measure_"+ Properties.Settings.Default.LastConnectedDevice+ " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
 
             YFormatter = value => value.ToString("e");
 
@@ -448,6 +474,13 @@ namespace LoggerDeviceValues
             MainParam_MillsBetweenMeasure = new List<int>();
 
             System_ConnectToDeviceFromAppSettings();
+
+            System_LogMessage("asdas sdfsdfdsfdsf dsfsdfsd sdfsdf sdfsdf sd sd");
+            System_LogMessage("asdas2 sdfsdfdsfdsf dsfsdfsd sdfsdf sdfsdf sd sd");
+            System_LogMessage("asdas3 sdfsdfdsfdsf ds1");
+            System_LogMessage("asdas3 sdfsdfdsfdsf ds2");
+            System_LogMessage("asdas3 sdfsdfdsfdsf ds3");
+            //System.Drawing.SystemIcons.Information
         }
 
         private void ComboBox_Interfaces_DropDownOpened(object sender, EventArgs e)
@@ -503,7 +536,7 @@ namespace LoggerDeviceValues
                 Properties.Settings.Default.LastConnectedDevice = LabDevice.SupportedDevices.UT71D.ToString();
                 Properties.Settings.Default.Save();
                 System_ConnectToDeviceFromAppSettings();
-                TextBox_FilePos.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+                TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
             }
             if (ComboBox_Devices.SelectedItem.ToString().Contains(LabDevice.SupportedDevices.HP53132A.ToString()))
             {
@@ -511,13 +544,13 @@ namespace LoggerDeviceValues
                 Properties.Settings.Default.LastConfig = ComboBox_Interfaces.SelectedItem.ToString() + " 19200 ";
                 Properties.Settings.Default.Save();
                 System_ConnectToDeviceFromAppSettings();
-                TextBox_FilePos.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+                TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
             }
         }
 
         private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)
         {
-            TextBox_FilePos.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
         }
 
         private void Button_SetPathFile_Click(object sender, RoutedEventArgs e)
@@ -525,9 +558,9 @@ namespace LoggerDeviceValues
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Text file (*.txt)|*.txt";
             saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            saveFileDialog.FileName = TextBox_FilePos.Text;
+            saveFileDialog.FileName = TextBox_FileName.Text;
             if (saveFileDialog.ShowDialog() == true)
-                TextBox_FilePos.Text = saveFileDialog.FileName;
+                TextBox_FileName.Text = saveFileDialog.FileName;
         }
 
         private void RadioButton_FixedPoint_Click(object sender, RoutedEventArgs e)
@@ -548,28 +581,28 @@ namespace LoggerDeviceValues
         {
             if ((bool)RadioButton_QtyMeas.IsChecked)
             {
-                TextBox_QtyMeas.IsEnabled = true;
+                IntegerUpDown_QtyMeas.IsEnabled = true;
                 TimeSpanUpDown_Timer.IsEnabled = false;
             }
             if ((bool)RadioButton_Timer.IsChecked)
             {
-                TextBox_QtyMeas.IsEnabled = false;
+                IntegerUpDown_QtyMeas.IsEnabled = false;
                 TimeSpanUpDown_Timer.IsEnabled = true;
             }
         }
 
         private void RadioButton_Timer_Checked(object sender, RoutedEventArgs e)
         {
-            if (TextBox_QtyMeas != null)
+            if (IntegerUpDown_QtyMeas != null)
             {
                 if ((bool)RadioButton_QtyMeas.IsChecked)
                 {
-                    TextBox_QtyMeas.IsEnabled = true;
+                    IntegerUpDown_QtyMeas.IsEnabled = true;
                     TimeSpanUpDown_Timer.IsEnabled = false;
                 }
                 if ((bool)RadioButton_Timer.IsChecked)
                 {
-                    TextBox_QtyMeas.IsEnabled = false;
+                    IntegerUpDown_QtyMeas.IsEnabled = false;
                     TimeSpanUpDown_Timer.IsEnabled = true;
                 }
             }
@@ -597,8 +630,8 @@ namespace LoggerDeviceValues
                 RadioButton_Scientific.IsEnabled = true;
                 RadioButton_QtyMeas.IsEnabled = true;
                 RadioButton_Timer.IsEnabled = true;
-                TextBox_FilePos.IsEnabled = true;
-                Button_GenerateNewNameFile.IsEnabled = true;
+                //TextBox_FilePos.IsEnabled = true;
+                //Button_GenerateNewNameFile.IsEnabled = true;
                 Button_SetPathFile.IsEnabled = true;
                 //CheckBox_ValueOnly.IsEnabled = true;
                 //TextBox_FragmentSize.IsEnabled = true;
@@ -629,8 +662,8 @@ namespace LoggerDeviceValues
                 try
                 {
                     string filepath;
-                    if (TextBox_FilePos.Text.Contains("\\")) filepath = TextBox_FilePos.Text;
-                    else filepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + TextBox_FilePos.Text;
+                    if (TextBox_FileName.Text.Contains("\\")) filepath = TextBox_FileName.Text;
+                    else filepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + TextBox_FileName.Text;
                     if (MainParam_StreamWriter != null) MainParam_StreamWriter.Close();
                     if (File.Exists(filepath))
                     {
@@ -656,8 +689,8 @@ namespace LoggerDeviceValues
                     RadioButton_Scientific.IsEnabled = false;
                     RadioButton_QtyMeas.IsEnabled = false;
                     RadioButton_Timer.IsEnabled = false;
-                    TextBox_FilePos.IsEnabled = false;
-                    Button_GenerateNewNameFile.IsEnabled = false;
+                    //TextBox_FilePos.IsEnabled = false;
+                    //Button_GenerateNewNameFile.IsEnabled = false;
                     Button_SetPathFile.IsEnabled = false;
                     //CheckBox_ValueOnly.IsEnabled = false;
                     //TextBox_FragmentSize.IsEnabled = false;
@@ -687,7 +720,7 @@ namespace LoggerDeviceValues
                     }
                     if ((bool)RadioButton_QtyMeas.IsChecked)
                     {
-                        MainParam_CounterMeasure_End = MainParam_CounterMeasure + int.Parse(TextBox_QtyMeas.Text);
+                        MainParam_CounterMeasure_End = MainParam_CounterMeasure + (int)IntegerUpDown_QtyMeas.Value;
                     }
                 }
                 catch (Exception ex)
@@ -724,6 +757,18 @@ namespace LoggerDeviceValues
             if (CheckBox_BurnTime.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
             if (CheckBox_BurnRAW.IsChecked.Value) StringForBurnToFile += " " + "[RAW]";
             TextBlock_BurnString.Text = StringForBurnToFile;
+        }
+
+        private void Button_LogEvent_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            MessageBox.Show(button.DataContext.ToString());
+        }
+
+        private void Button_SaveCurrentData_Click(object sender, RoutedEventArgs e)
+        {
+            Random rnd = new Random();
+            System_AddValueToGraph((decimal)(rnd.NextDouble() * 100), LabDevice.DataTypes.Voltage);
         }
 
         //private void CheckBox_AnimatedGraph_Click(object sender, RoutedEventArgs e)

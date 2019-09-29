@@ -8,7 +8,7 @@ namespace LoggerDeviceValues
 {
     public class MeasureModel
     {
-        public double Label { get; set; }
+        public DateTime DateTime { get; set; }
         public double Value { get; set; }
     }
 }
