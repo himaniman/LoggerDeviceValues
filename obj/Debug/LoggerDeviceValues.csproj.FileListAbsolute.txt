@@ -14,8 +14,6 @@ Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CoreCom
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.exe
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.pdb
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\HidSharp.dll
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.dll
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Wpf.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Aero.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Metro.dll
@@ -23,10 +21,6 @@ Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.Themes.VS201
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.Toolkit.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\HidSharp.pdb
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\HidSharp.xml
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.pdb
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.xml
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Wpf.pdb
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Wpf.xml
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\de\Xceed.Wpf.AvalonDock.resources.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\es\Xceed.Wpf.AvalonDock.resources.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\fr\Xceed.Wpf.AvalonDock.resources.dll
@@ -38,7 +32,6 @@ Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\ru\Xceed.Wpf.AvalonDock.resources
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\sv\Xceed.Wpf.AvalonDock.resources.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CopyComplete
-Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Geared.dll
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csprojAssemblyReference.cache
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\MainWindow.g.cs
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\App.g.cs
@@ -80,3 +73,7 @@ D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.Properties.Resou
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.GenerateResource.cache
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CoreCompileInputs.cache
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CopyComplete
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.dll
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.dll
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.xml
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.xml

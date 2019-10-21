@@ -4,9 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LoggerDeviceValues"
-        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-        xmlns:geared="clr-namespace:LiveCharts.Geared;assembly=LiveCharts.Geared"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         Title="Logger Device Values v0.3 filename" Height="600" Width="900" Background="White">
     <DockPanel>
@@ -128,10 +127,10 @@
                             </Grid.ColumnDefinitions>
                             <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True">
                                 <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Получать данные   "/>
+                                    <TextBlock Text="Получать данные   "/>
                                     <Canvas x:Name="appbar_control_fastforward_variant" Width="28" Height="15">
                                         <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
-                                </Canvas>
+                                    </Canvas>
                                 </StackPanel>
                             </RadioButton>
                             <RadioButton Grid.Column="1" Name="RadioButton_StopMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}">
@@ -144,8 +143,9 @@
                             </RadioButton>
                             <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
                         </Grid>
-                        <lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="True" MouseDoubleClick="MainChart_MouseDoubleClick">
-                            <!--<lvc:CartesianChart.Series>
+                        <oxy:PlotView Grid.Row="1" Name="MainChart" Model="{Binding MainChartModel}" />
+                        <!--<lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="True" MouseDoubleClick="MainChart_MouseDoubleClick">
+                            --><!--<lvc:CartesianChart.Series>
                                 <geared:GLineSeries Values="{Binding MainChartValues}" Title=""
                                 PointGeometry="{x:Null}" 
                                 LineSmoothness="0"
@@ -156,13 +156,13 @@
                                 <lvc:Axis 
                                     LabelFormatter="{Binding YFormatter}"
                                     Title="Частота"/>
-                            </lvc:CartesianChart.AxisY>-->
+                            </lvc:CartesianChart.AxisY>--><!--
                             <lvc:CartesianChart.AxisX>
                                 <lvc:Axis LabelFormatter="{Binding DateTimeFormatter}" Unit="{Binding AxisUnit}">
                                     <lvc:Axis.Separator>
                                         <lvc:Separator StrokeDashArray="10" Step="{Binding AxisStep}"></lvc:Separator>
                                     </lvc:Axis.Separator>
-                                    <!--<lvc:Axis.Sections>
+                                    --><!--<lvc:Axis.Sections>
                                         <lvc:AxisSection Value="1200" StrokeThickness="3" Stroke="#F9D648">
                                             -->
                                     <!--<lvc:AxisSection.Fill>
@@ -170,10 +170,10 @@
                                             </lvc:AxisSection.Fill>-->
                                     <!--
                                         </lvc:AxisSection>
-                                    </lvc:Axis.Sections>-->
+                                    </lvc:Axis.Sections>--><!--
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
-                        </lvc:CartesianChart>
+                        </lvc:CartesianChart>-->
                         <TextBlock Grid.Row="1" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16"/>
                         <Grid Grid.Row="2">
                             <Grid.RowDefinitions>
@@ -208,7 +208,7 @@
                             <RowDefinition Height="6*"/>
                             <RowDefinition Height="150"/>
                         </Grid.RowDefinitions>
-                        <lvc:CartesianChart Grid.Row="0" Name="AllChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
+                        <!--<lvc:CartesianChart Grid.Row="0" Name="AllChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
                             <lvc:CartesianChart.Series>
                                 <lvc:LineSeries Values="{Binding AllChartValues}" 
                                     PointGeometry="{x:Null}" 
@@ -217,17 +217,17 @@
                                     Stroke="Black"
                                     Fill="Transparent"/>
                             </lvc:CartesianChart.Series>
-                            <!--<lvc:CartesianChart.AxisY>
+                            --><!--<lvc:CartesianChart.AxisY>
                                     <lvc:Axis 
                                         LabelFormatter="{Binding YFormatter}"
                                         Title="Частота"/>
-                                </lvc:CartesianChart.AxisY>-->
+                                </lvc:CartesianChart.AxisY>--><!--
                             <lvc:CartesianChart.AxisX>
                                 <lvc:Axis Title="..." Labels="{Binding AllChartLables}">
                                     <lvc:Axis.Separator>
                                         <lvc:Separator StrokeDashArray="10"></lvc:Separator>
                                     </lvc:Axis.Separator>
-                                    <!--<lvc:Axis.Sections>
+                                    --><!--<lvc:Axis.Sections>
                                             <lvc:AxisSection Value="1200" StrokeThickness="3" Stroke="#F9D648">
                                                 -->
                                     <!--<lvc:AxisSection.Fill>
@@ -235,10 +235,10 @@
                                                 </lvc:AxisSection.Fill>-->
                                     <!--
                                             </lvc:AxisSection>
-                                        </lvc:Axis.Sections>-->
+                                        </lvc:Axis.Sections>--><!--
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
-                        </lvc:CartesianChart>
+                        </lvc:CartesianChart>-->
                         <Button Content="Button" HorizontalAlignment="Left" Margin="182,64,0,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
                     </Grid>
                 </TabItem>

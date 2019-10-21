@@ -14,12 +14,12 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using System.IO.Ports;
-using LiveCharts;
-using LiveCharts.Wpf;
-using LiveCharts.Geared;
-using LiveCharts.Defaults;
+//using LiveCharts;
+//using LiveCharts.Wpf;
+//using LiveCharts.Geared;
+//using LiveCharts.Defaults;
 using System.Collections.Concurrent;
-using LiveCharts.Configurations;
+//using LiveCharts.Configurations;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -29,6 +29,9 @@ using HidSharp.Utility;
 using HidSharp;
 using System.Diagnostics;
 using System.Threading;
+
+using OxyPlot;
+using OxyPlot.Series;
 
 namespace LoggerDeviceValues
 {
@@ -47,8 +50,9 @@ namespace LoggerDeviceValues
         public HidDevice MainParam_HIDDevice;
         public HidStream MainParam_HIDStream;
 
-        public GearedValues<MeasureModel> MainChartValues { get; set; }
-        public GearedValues<MeasureModel> AllChartValues { get; set; }
+        public PlotModel MainChartModel { get; set; }
+        //public GearedValues<MeasureModel> MainChartValues { get; set; }
+        //public GearedValues<MeasureModel> AllChartValues { get; set; }
         public Func<double, string> DateTimeFormatter { get; set; }
         public Func<double, string> YFormatter { get; set; }
         public Func<double, string> AllYFormatter { get; set; }
@@ -309,51 +313,51 @@ namespace LoggerDeviceValues
 
         public void System_AddValueToGraph(decimal value, LabDevice.DataTypes type)
         {
-            if (MainChartValues.Count == 0)
-            {
-                SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
-                switch (type)
-                {
-                    case LabDevice.DataTypes.Current:
-                        NewColor = new SolidColorBrush(Colors.Red); break;
-                    case LabDevice.DataTypes.Voltage:
-                        NewColor = new SolidColorBrush(Colors.Blue); break;
-                    case LabDevice.DataTypes.Capacity:
-                        NewColor = new SolidColorBrush(Colors.Orange); break;
-                    case LabDevice.DataTypes.Temperature:
-                        NewColor = new SolidColorBrush(Colors.Gold); break;
-                    case LabDevice.DataTypes.Freq:
-                        NewColor = new SolidColorBrush(Colors.Green); break;
-                }
-                MainChart.Series.Clear();
-                MainChart.Series.Add(new GLineSeries
-                {
-                    Values = MainChartValues,
-                    Title = type.ToString(),
-                    StrokeThickness = 2,
-                    LineSmoothness = 0,
-                    Stroke = NewColor
-                });
-                MainChartValues.Quality = Quality.Highest;
-            }
+            //if (MainChartValues.Count == 0)
+            //{
+            //    SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
+            //    switch (type)
+            //    {
+            //        case LabDevice.DataTypes.Current:
+            //            NewColor = new SolidColorBrush(Colors.Red); break;
+            //        case LabDevice.DataTypes.Voltage:
+            //            NewColor = new SolidColorBrush(Colors.Blue); break;
+            //        case LabDevice.DataTypes.Capacity:
+            //            NewColor = new SolidColorBrush(Colors.Orange); break;
+            //        case LabDevice.DataTypes.Temperature:
+            //            NewColor = new SolidColorBrush(Colors.Gold); break;
+            //        case LabDevice.DataTypes.Freq:
+            //            NewColor = new SolidColorBrush(Colors.Green); break;
+            //    }
+            //    MainChart.Series.Clear();
+            //    MainChart.Series.Add(new GLineSeries
+            //    {
+            //        Values = MainChartValues,
+            //        Title = type.ToString(),
+            //        StrokeThickness = 2,
+            //        LineSmoothness = 0,
+            //        Stroke = NewColor
+            //    });
+            //    MainChartValues.Quality = Quality.Highest;
+            //}
 
             
-            MainChartValues.Add(new MeasureModel
-            {
-                DateTime = DateTime.Now,
-                Value = (double)value
-            });
+            //MainChartValues.Add(new MeasureModel
+            //{
+            //    DateTime = DateTime.Now,
+            //    Value = (double)value
+            //});
 
-            //MainChart.AxisX[0].MaxValue = 100;
+            ////MainChart.AxisX[0].MaxValue = 100;
 
-            MainParam_Values.Add(value);
+            //MainParam_Values.Add(value);
 
-            AxisStep = TimeSpan.FromSeconds(1).Ticks;
+            //while (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) && int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) != 1)
+            //{
+            //    MainChartValues.RemoveAt(0);
+            //}
 
-            while (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) && int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()) != 1)
-            {
-                MainChartValues.RemoveAt(0);
-            }
+            //AxisStep = TimeSpan.FromSeconds(100).Ticks;
         }
 
         public void System_AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
@@ -415,10 +419,10 @@ namespace LoggerDeviceValues
 
         public void System_ClearAllData()
         {
-            MainChartValues.Clear();
-            MainChart.AxisX[0].Sections.Clear();
-            MainChart.Update();
-            MainParam_Values.Clear();
+            //MainChartValues.Clear();
+            //MainChart.AxisX[0].Sections.Clear();
+            //MainChart.Update();
+            //MainParam_Values.Clear();
             if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...") Button_FileBurnStart_Click(null, null);
             MainParam_PastMeasure = DateTime.Now;
             MainParam_CounterMeasure = 0;
@@ -430,25 +434,48 @@ namespace LoggerDeviceValues
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
+
+            MainChartModel = new PlotModel {};
+            var s1 = new LineSeries
+            {
+                StrokeThickness = 1,
+                MarkerSize = 3,
+                MarkerStroke = OxyColors.ForestGreen,
+                MarkerType = MarkerType.Plus
+            };
+
+
+            s1.Points.Add(new DataPoint(1, 1));
+            s1.Points.Add(new DataPoint(2, 2));
+            s1.Points.Add(new DataPoint(3, 1));
+
+
+            MainChartModel.Series.Add(s1);
+
+            //MainChartModel.Axes[0].Title = "asdas";
+            
+            //this.MainChartModel = tmp;
+
             //Properties.Settings.Default.COMBaudrate = 19200;
             //Properties.Settings.Default.Save();
             //MainParam_SerialPort = new SerialPort(Properties.Settings.Default.COMName, Properties.Settings.Default.COMBaudrate, Parity.None, 8, StopBits.One);
             //MainParam_SerialPort.DataReceived += new SerialDataReceivedEventHandler(System_SerialDataReceived);
-            var mapper = Mappers.Xy<MeasureModel>()
-               .X(model => model.DateTime.Ticks)
-               .Y(model => model.Value);
-            Charting.For<MeasureModel>(mapper);
-            
+            ////var mapper = Mappers.Xy<MeasureModel>()
+            ////   .X(model => model.DateTime.Ticks)
+            ////   .Y(model => model.Value);
+            ////Charting.For<MeasureModel>(mapper);
 
-            DataContext = this;
-            MainChartValues = new GearedValues<MeasureModel>();
-            MainChartValues.WithQuality(Quality.Medium);
-            AllChartValues = new GearedValues<MeasureModel>();
-            AllChartValues.WithQuality(Quality.Low);
 
-            DateTimeFormatter = value => new DateTime(Math.Abs((long)value)).ToString("mm:ss");
-            AxisStep = TimeSpan.FromSeconds(1).Ticks;
-            AxisUnit = TimeSpan.TicksPerSecond;
+            ////DataContext = this;
+            ////MainChartValues = new GearedValues<MeasureModel>();
+            ////MainChartValues.WithQuality(Quality.Medium);
+            ////AllChartValues = new GearedValues<MeasureModel>();
+            ////AllChartValues.WithQuality(Quality.Low);
+
+            ////DateTimeFormatter = value => new DateTime(Math.Abs((long)value)).ToString("mm:ss");
+            ////AxisStep = TimeSpan.FromSeconds(10).Ticks;
+            ////AxisUnit = TimeSpan.TicksPerSecond;
 
             if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
                 TextBox_FileName.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
@@ -568,7 +595,7 @@ namespace LoggerDeviceValues
 
             if ((bool)RadioButton_Scientific.IsChecked) YFormatter = value => LabDevice.ConvertScientific((decimal)value, MainParam_DataType);
             if ((bool)RadioButton_FixedPoint.IsChecked) YFormatter = value => LabDevice.ConvertFixedPoint((decimal)value, MainParam_DataType);
-            if (MainChart.AxisY.Count>0) MainChart.AxisY[0].LabelFormatter = YFormatter;
+            //if (MainChart.AxisY.Count>0) MainChart.AxisY[0].LabelFormatter = YFormatter;
         }
 
         private void TextBox_FragmentSize_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -637,13 +664,13 @@ namespace LoggerDeviceValues
                 //TextBox_FragmentSize.IsEnabled = true;
 
                 MainParam_CounterMeasure_End = MainParam_CounterMeasure;
-                MainChart.AxisX[0].Sections.Add(new AxisSection
-                {
-                    Value = MainParam_CounterMeasure_End,
-                    StrokeThickness = 3,
-                    Stroke = new SolidColorBrush(Color.FromRgb(220, 30, 30)),
-                    DataLabel = true,
-                });
+                //MainChart.AxisX[0].Sections.Add(new AxisSection
+                //{
+                //    Value = MainParam_CounterMeasure_End,
+                //    StrokeThickness = 3,
+                //    Stroke = new SolidColorBrush(Color.FromRgb(220, 30, 30)),
+                //    DataLabel = true,
+                //});
 
                 TextBlock_Status.Text = "Запись окончена в " + DateTime.Now.ToString("HH:mm") +
                     "    Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " Значений";
@@ -697,13 +724,13 @@ namespace LoggerDeviceValues
 
                     MainParam_CounterMeasure_Start = MainParam_CounterMeasure;
                     MainParam_TimeStartMeasure = DateTime.Now;
-                    MainChart.AxisX[0].Sections.Add(new AxisSection
-                    {
-                        Value = MainParam_CounterMeasure_Start,
-                        StrokeThickness = 3,
-                        Stroke = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 213, 72)),
-                        DataLabel = true,
-                    });
+                    ////MainChart.AxisX[0].Sections.Add(new AxisSection
+                    ////{
+                    ////    Value = MainParam_CounterMeasure_Start,
+                    ////    StrokeThickness = 3,
+                    ////    Stroke = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 213, 72)),
+                    ////    DataLabel = true,
+                    ////});
 
                     TextBlock_Status.Text = "Запись начата в " + DateTime.Now.ToString("HH:mm");
 
@@ -733,11 +760,11 @@ namespace LoggerDeviceValues
             MainParam_PastMeasure = DateTime.Now;
         }
 
-        private void MainChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            MainChart.AxisX[0].MinValue = double.NaN;
-            MainChart.AxisX[0].MaxValue = double.NaN;
-        }
+        //private void MainChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        //{
+        //    MainChart.AxisX[0].MinValue = double.NaN;
+        //    MainChart.AxisX[0].MaxValue = double.NaN;
+        //}
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
