@@ -313,6 +313,8 @@ namespace LoggerDeviceValues
 
         public void System_AddValueToGraph(decimal value, LabDevice.DataTypes type)
         {
+            (MainChartModel.Series[0] as LineSeries).Points.Add(new DataPoint((double)value, (double)value));
+            MainChart.InvalidatePlot();
             //if (MainChartValues.Count == 0)
             //{
             //    SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
@@ -341,7 +343,7 @@ namespace LoggerDeviceValues
             //    MainChartValues.Quality = Quality.Highest;
             //}
 
-            
+
             //MainChartValues.Add(new MeasureModel
             //{
             //    DateTime = DateTime.Now,
@@ -453,8 +455,9 @@ namespace LoggerDeviceValues
 
             MainChartModel.Series.Add(s1);
 
+
             //MainChartModel.Axes[0].Title = "asdas";
-            
+
             //this.MainChartModel = tmp;
 
             //Properties.Settings.Default.COMBaudrate = 19200;

@@ -116,16 +116,25 @@
                 <TabItem Header="Текущие измерения">
                     <Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="60"/>
                             <RowDefinition Height="40"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="85"/>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" Margin="10,10,10,10">
+                        <GroupBox Grid.Row="0" Margin="10,5,10,5">
+                            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="   UT70D   "/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </GroupBox>
+                        <Grid Grid.Row="1" Margin="10,10,10,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True">
+                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" IsEnabled="False">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Получать данные   "/>
                                     <Canvas x:Name="appbar_control_fastforward_variant" Width="28" Height="15">
@@ -133,9 +142,17 @@
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
-                            <RadioButton Grid.Column="1" Name="RadioButton_StopMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}">
+                            <RadioButton Grid.Column="1" Name="RadioButton_PauseMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Остановка получения данных   "/>
+                                    <TextBlock Text="Пауза   "/>
+                                    <Canvas x:Name="appbar_pause" Width="16" Height="16">
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#AAFFF000" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z " RenderTransformOrigin="0.5,0.5"/>
+                                    </Canvas>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Grid.Column="2" Name="RadioButton_StopMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Удалить устройство   "/>
                                     <Canvas x:Name="appbar_close" Width="16" Height="16">
                                         <Path Width="16" Height="16" Stretch="Fill" Fill="#FFFF0000" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
@@ -143,7 +160,7 @@
                             </RadioButton>
                             <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
                         </Grid>
-                        <oxy:PlotView Grid.Row="1" Name="MainChart" Model="{Binding MainChartModel}" />
+                        <oxy:PlotView Grid.Row="2" Name="MainChart" Model="{Binding MainChartModel}" />
                         <!--<lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="True" MouseDoubleClick="MainChart_MouseDoubleClick">
                             --><!--<lvc:CartesianChart.Series>
                                 <geared:GLineSeries Values="{Binding MainChartValues}" Title=""
@@ -174,8 +191,8 @@
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                         </lvc:CartesianChart>-->
-                        <TextBlock Grid.Row="1" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16"/>
-                        <Grid Grid.Row="2">
+                        <TextBlock Grid.Row="2" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Hidden"/>
+                        <Grid Grid.Row="3">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="30"/>
                                 <RowDefinition Height="26"/>

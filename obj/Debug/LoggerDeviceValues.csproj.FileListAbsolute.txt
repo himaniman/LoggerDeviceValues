@@ -43,9 +43,6 @@ D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LoggerDeviceValues.exe.config
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LoggerDeviceValues.exe
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LoggerDeviceValues.pdb
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\HidSharp.dll
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.dll
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Geared.dll
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Wpf.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Aero.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Metro.dll
@@ -53,10 +50,6 @@ D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.AvalonDock.Themes.VS2010.
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Xceed.Wpf.Toolkit.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\HidSharp.pdb
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\HidSharp.xml
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.pdb
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.xml
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Wpf.pdb
-D:\GitSynFolder\LoggerDeviceValues\bin\Debug\LiveCharts.Wpf.xml
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\de\Xceed.Wpf.AvalonDock.resources.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\es\Xceed.Wpf.AvalonDock.resources.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\fr\Xceed.Wpf.AvalonDock.resources.dll
@@ -77,3 +70,7 @@ Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.xml
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.xml
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.dll
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.dll
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.xml
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.xml
