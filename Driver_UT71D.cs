@@ -1,13 +1,15 @@
-﻿using System;
+﻿using HidSharp;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LoggerDeviceValues
 {
-    class Driver_UT71D : LabDevice
+    class Driver_UT71D
     {
         public static double[,] multlut  = new double[17,8] {
             { 1e-5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
@@ -28,12 +30,68 @@ namespace LoggerDeviceValues
             { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             { 1e-2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}};
 
-        static byte[] LocalBuffer = new byte[1];
-        public static bool TryParceData(byte [] data, out decimal Resoult, out DataTypes CurrentType, out string ResoultInRAW)
+        byte[] LocalBuffer;
+        byte[] HIDBuffer;
+        public Thread ThreadRead_Discriptor;
+        public HidDevice HIDDevice_Discriptor;
+        public HidStream HIDStream_Discriptor;
+        public LabDevice TargetLabDevice;
+
+        public Driver_UT71D(LabDevice _LinkLabDevice)
+        {
+            LocalBuffer = new byte[1];
+            TargetLabDevice = _LinkLabDevice;
+        }
+
+        public bool Connect(HidDevice _HidDevice)
+        {
+            HIDDevice_Discriptor = _HidDevice;
+            //DeviceList.Local.TryGetHidDevice(out HIDDevice_Discriptor, vendorID: 6790, productID: 57352);
+            if (HIDDevice_Discriptor == null) return false; //Ошибка доступа к HID устройству
+            if (!HIDDevice_Discriptor.TryOpen(out HIDStream_Discriptor)) return false; //Ошибка получения потока чтения для HID устройства
+            byte[] InitialConfigStructure = new byte[] { 0x00, 0x4B, 0x00, 0x00, 0x00, 0x03 };
+            HIDStream_Discriptor.SetFeature(InitialConfigStructure);
+            HIDBuffer = new byte[11];
+            ThreadRead_Discriptor = new Thread(HIDStreamDataReceived);
+            ThreadRead_Discriptor.Start();
+            return true;
+        }
+
+        public void Disconnect()
+        {
+            ThreadRead_Discriptor.Abort();
+        }
+
+        void HIDStreamDataReceived()
+        {
+            try
+            {
+                while (true)
+                {
+                    HIDBuffer = HIDStream_Discriptor.Read();
+                    decimal value;
+                    string valueRAW;
+                    LabDevice.DataTypes type;
+                    if (TryParceData2(HIDBuffer, out value, out type, out valueRAW))
+                    {
+                        //Debug.WriteLine(valueRAW, type.ToString());
+                        //System_NewValue(value, type, valueRAW);
+                        TargetLabDevice.NewValue(value);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.ToString());
+                return;
+            }
+        }
+
+        public bool TryParceData(byte [] data, out decimal Resoult, out LabDevice.DataTypes CurrentType, out string ResoultInRAW)
         {
             Resoult = 0;
             ResoultInRAW = "";
-            CurrentType = DataTypes.Abstract;
+            CurrentType = LabDevice.DataTypes.Abstract;
             if (data[1] != 240 && data[1] != 0)
             {
                 LocalBuffer = LocalBuffer.Concat(data.Skip(2).Take(data[1]-240).ToArray()).ToArray();
@@ -61,12 +119,12 @@ namespace LoggerDeviceValues
                     if ((LocalBuffer[CurrentStart + 8] & 0x04)>0) Resoult *= -1;
                     switch (function)
                     {
-                        case 0: case 1: case 2: case 3: CurrentType = DataTypes.Voltage; break;
-                        case 4: CurrentType = DataTypes.Resistance; break;
-                        case 5: CurrentType = DataTypes.Capacity; break;
-                        case 6: CurrentType = DataTypes.Temperature; break;
-                        case 7: case 8: case 9: CurrentType = DataTypes.Current; break;
-                        case 12: CurrentType = DataTypes.Freq; break;
+                        case 0: case 1: case 2: case 3: CurrentType = LabDevice.DataTypes.Voltage; break;
+                        case 4: CurrentType = LabDevice.DataTypes.Resistance; break;
+                        case 5: CurrentType = LabDevice.DataTypes.Capacity; break;
+                        case 6: CurrentType = LabDevice.DataTypes.Temperature; break;
+                        case 7: case 8: case 9: CurrentType = LabDevice.DataTypes.Current; break;
+                        case 12: CurrentType = LabDevice.DataTypes.Freq; break;
                     }
                     ResoultInRAW = BitConverter.ToString(LocalBuffer.Skip(CurrentStart).ToArray());
                     LocalBuffer = new byte[1];
@@ -75,6 +133,86 @@ namespace LoggerDeviceValues
                         Resoult = 0;
                         return false;
                     }
+                    return true;
+                }
+                else
+                {
+                    LocalBuffer = new byte[1];
+                    return false;
+                }
+            }
+
+            return false;
+            //try
+            //{
+            //    LocalBuffer = LocalBuffer.Concat(data).ToArray();
+            //    Resoult = LocalBuffer.Length;
+            //    //CurrentValue = Resoult;
+            //    return true;
+            //}
+            //catch
+            //{
+            //    return false;
+            //}
+        }
+
+        public bool TryParceData2(byte[] data, out decimal Resoult, out LabDevice.DataTypes CurrentType, out string ResoultInRAW)
+        {
+            Resoult = 0;
+            ResoultInRAW = "";
+            CurrentType = LabDevice.DataTypes.Abstract;
+            if (data[1] != 240 && data[1] != 0)
+            {
+                LocalBuffer = LocalBuffer.Concat(data.Skip(2).Take(data[1] - 240).ToArray()).ToArray();
+            }
+            //Debug.WriteLine(LocalBuffer.Length);
+            int EndPos = IndexOf(LocalBuffer, new byte[] { 0x0D }, 0);
+            if (EndPos != -1)
+            {
+                if (EndPos >= 13)
+                {
+                    char[] asciiChars = Encoding.ASCII.GetChars(LocalBuffer);
+                    string asciiString = new string(asciiChars);
+                    Debug.WriteLine(System.Text.Encoding.ASCII.GetString(LocalBuffer));
+                    int CurrentStart = EndPos - 13;
+                    int multiplex = 1000;
+                    int devider = 1;
+                    for (int i = CurrentStart + 5; i< CurrentStart + 10; i++)
+                    {
+                        if (LocalBuffer[i] == 0x2E)
+                        {
+                            devider = multiplex;
+                        }
+                        else
+                        {
+                            Resoult += (LocalBuffer[i] & 0x0F) * multiplex;
+                            multiplex /= 10;
+                        }
+                    }
+                    Resoult /= devider;
+
+                    //Resoult = digits[4] + digits[3] * 10 + digits[2] * 100 + digits[1] * 1000 + digits[0] * 10000;
+                    //int rangeindex = LocalBuffer[CurrentStart + 5] & 0x0F;
+                    //int function = (LocalBuffer[CurrentStart + 6] & 0x0F);
+                    //decimal multi = (decimal)multlut[function, rangeindex];
+                    //Resoult *= multi;
+                    if (LocalBuffer[CurrentStart + 4] == 0x2D) Resoult *= -1;
+                    switch (CurrentStart + 1)
+                    {
+                        case (byte)'D': CurrentType = LabDevice.DataTypes.Voltage; break;
+                        case (byte)'O': CurrentType = LabDevice.DataTypes.Resistance; break;
+                        case (byte)'C': CurrentType = LabDevice.DataTypes.Capacity; break;
+                        case (byte)'T': CurrentType = LabDevice.DataTypes.Temperature; break;
+                        case (byte)'A': CurrentType = LabDevice.DataTypes.Current; break;
+                        case 12: CurrentType = LabDevice.DataTypes.Freq; break;
+                    }
+                    ResoultInRAW = BitConverter.ToString(LocalBuffer.Skip(CurrentStart).ToArray());
+                    LocalBuffer = new byte[1];
+                    //if (digits[0] == 0x0a && digits[1] == 0x0a && digits[2] == 0x00 && digits[3] == 0x0c && digits[4] == 0x0a)
+                    //{
+                    //    Resoult = 0;
+                    //    return false;
+                    //}
                     return true;
                 }
                 else

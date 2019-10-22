@@ -86,91 +86,93 @@ namespace LoggerDeviceValues
 
         public void System_ConnectToDeviceFromAppSettings()
         {
-            try
-            {
-                if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
-                {
-                    return;
-                }
-                if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.HP53132A.ToString())
-                {
-                    if (Properties.Settings.Default.LastConfig == "null" || Properties.Settings.Default.LastConfig == "" || Properties.Settings.Default.LastConfig.Count(x => x==' ') !=2)
-                    {
-                        return;
-                    }
-                    else {
-                        String COMName = Properties.Settings.Default.LastConfig.Split(' ')[0];
-                        int baudrate = int.Parse(Properties.Settings.Default.LastConfig.Split(' ')[1]);
-                        MainParam_SerialPort = new SerialPort(COMName, baudrate, Parity.None, 8, StopBits.One);
-                        MainParam_SerialPort.DataReceived += new SerialDataReceivedEventHandler(System_SerialDataReceived);
-                        if (!MainParam_SerialPort.IsOpen) MainParam_SerialPort.Open();
-                        if (MainParam_SerialPort.IsOpen)
-                        {
-                            TextBlock_Status.Text = "COM port открыт (" + COMName + ")";
-                            ComboBox_Interfaces.Items.Clear();
-                            ComboBox_Interfaces.Items.Add(COMName);
-                            ComboBox_Interfaces.SelectedIndex = 0;
-                            //ComboBox_Interfaces.Background = new SolidColorBrush(Colors.LightGreen);
-                            MainParam_DeviceName = LabDevice.SupportedDevices.HP53132A;
-                        }
-                    }
-                }
-                if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.UT71D.ToString())
-                {
-                    DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352);
-                    if (MainParam_HIDDevice == null) { TextBlock_Status.Text = "Ошибка доступа к HID устройству"; return; }
-                    if (!MainParam_HIDDevice.TryOpen(out MainParam_HIDStream)) { TextBlock_Status.Text = "Ошибка получения потока чтения для HID устройства"; return; }
-                    //byte[] InitialConfigStructure = new byte[] { 0x00, 0x09, 0x60, 0x00, 0x00, 0x03 };
-                    byte[] InitialConfigStructure = new byte[] { 0x00, 0x4B, 0x00, 0x00, 0x00, 0x03 };
-                    MainParam_HIDStream.SetFeature(InitialConfigStructure);
-                    MainParam_HIDBuffer = new byte[11];
-                    //MainParam_HIDStream.ReadAsync()
-                    //MainParam_HIDStream.BeginRead(MainParam_HIDBuffer, 0, 11, new AsyncCallback(System_HIDStreamDataReceived), null);
-                    Thread thread1 = new Thread(System_HIDStreamDataReceived);
-                    thread1.Start();
-                    TextBlock_Status.Text = "Успешное получения потока чтения для HID устройства";
-
-                    if (ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName()) == -1) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
-                    ComboBox_Interfaces.SelectedIndex = ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName());
-                    ComboBox_Devices.SelectedIndex = ComboBox_Devices.Items.IndexOf(LabDevice.SupportedDevices.UT71D.ToString());
-
-                    //ComboBox_Devices.Text = "asdsad";
-                    //((ComboBoxItem)ComboBox_Devices.Items[ComboBox_Devices.SelectedIndex]).Content = new ComboBoxItem().Content="23123";
-                    ComboBox_Devices.Background = new SolidColorBrush(Colors.LightGreen);
-                    MainParam_DeviceName = LabDevice.SupportedDevices.UT71D;
-                }
-            }
-            catch (Exception ex)
-            {
-                Properties.Settings.Default.LastConfig = "null";
-                Properties.Settings.Default.LastConnectedDevice = "null";
-                Properties.Settings.Default.Save();
-                TextBlock_Status.Text = "Ошибка подключения к COM порту "+ex.ToString().Take(50);
-                return;
-            }
             //try
             //{
-            //    //TextBlock_Status.Text = "Try connect to port " + Properties.Settings.Default.COMName;
-            //    //if (MainParam_SerialPort.IsOpen) MainParam_SerialPort.Close();
+            //    if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
+            //    {
+            //        return;
+            //    }
+            //    if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.HP53132A.ToString())
+            //    {
+            //        if (Properties.Settings.Default.LastConfig == "null" || Properties.Settings.Default.LastConfig == "" || Properties.Settings.Default.LastConfig.Count(x => x==' ') !=2)
+            //        {
+            //            return;
+            //        }
+            //        else {
+            //            String COMName = Properties.Settings.Default.LastConfig.Split(' ')[0];
+            //            int baudrate = int.Parse(Properties.Settings.Default.LastConfig.Split(' ')[1]);
+            //            MainParam_SerialPort = new SerialPort(COMName, baudrate, Parity.None, 8, StopBits.One);
+            //            MainParam_SerialPort.DataReceived += new SerialDataReceivedEventHandler(System_SerialDataReceived);
+            //            if (!MainParam_SerialPort.IsOpen) MainParam_SerialPort.Open();
+            //            if (MainParam_SerialPort.IsOpen)
+            //            {
+            //                TextBlock_Status.Text = "COM port открыт (" + COMName + ")";
+            //                ComboBox_Interfaces.Items.Clear();
+            //                ComboBox_Interfaces.Items.Add(COMName);
+            //                ComboBox_Interfaces.SelectedIndex = 0;
+            //                //ComboBox_Interfaces.Background = new SolidColorBrush(Colors.LightGreen);
+            //                MainParam_DeviceName = LabDevice.SupportedDevices.HP53132A;
+            //            }
+            //        }
+            //    }
+            //    if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.UT71D.ToString())
+            //    {
+            //        DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352);
+            //        if (MainParam_HIDDevice == null) { TextBlock_Status.Text = "Ошибка доступа к HID устройству"; return; }
+            //        if (!MainParam_HIDDevice.TryOpen(out MainParam_HIDStream)) { TextBlock_Status.Text = "Ошибка получения потока чтения для HID устройства"; return; }
+            //        //byte[] InitialConfigStructure = new byte[] { 0x00, 0x09, 0x60, 0x00, 0x00, 0x03 };
+            //        byte[] InitialConfigStructure = new byte[] { 0x00, 0x4B, 0x00, 0x00, 0x00, 0x03 };
+            //        MainParam_HIDStream.SetFeature(InitialConfigStructure);
+            //        MainParam_HIDBuffer = new byte[11];
 
-            //    //MainParam_SerialPort.PortName = Properties.Settings.Default.COMName;
-            //    //MainParam_SerialPort.Handshake = Handshake.None;
-            //    //MainParam_SerialPort.Open();
+            //        string z = MainParam_HIDDevice.DevicePath;
+            //        //MainParam_HIDStream.ReadAsync()
+            //        //MainParam_HIDStream.BeginRead(MainParam_HIDBuffer, 0, 11, new AsyncCallback(System_HIDStreamDataReceived), null);
+            //        Thread thread1 = new Thread(System_HIDStreamDataReceived);
+            //        thread1.Start();
+            //        TextBlock_Status.Text = "Успешное получения потока чтения для HID устройства";
 
-            //    //if (MainParam_SerialPort.IsOpen)
-            //    //{
-            //    //    TextBlock_Status.Text = "COM port is open (" + Properties.Settings.Default.COMName + ")";
-            //    //    Label_StatusCOM.Content = "Подключено " + Properties.Settings.Default.COMName + " " + Properties.Settings.Default.COMBaudrate.ToString() + "bps";
-            //    //    Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGreen);
-            //    //    ComboBox_COMPorts.SelectedValue = Properties.Settings.Default.COMName;
-            //    //}
+            //        if (ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName()) == -1) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
+            //        ComboBox_Interfaces.SelectedIndex = ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName());
+            //        ComboBox_Devices.SelectedIndex = ComboBox_Devices.Items.IndexOf(LabDevice.SupportedDevices.UT71D.ToString());
+
+            //        //ComboBox_Devices.Text = "asdsad";
+            //        //((ComboBoxItem)ComboBox_Devices.Items[ComboBox_Devices.SelectedIndex]).Content = new ComboBoxItem().Content="23123";
+            //        ComboBox_Devices.Background = new SolidColorBrush(Colors.LightGreen);
+            //        MainParam_DeviceName = LabDevice.SupportedDevices.UT71D;
+            //    }
             //}
-            //catch
+            //catch (Exception ex)
             //{
-            //    //TextBlock_Status.Text = "COM port connect error (" + Properties.Settings.Default.COMName + ")";
-            //    //Label_StatusCOM.Content = "Не подключено";
-            //    //Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGray);
+            //    Properties.Settings.Default.LastConfig = "null";
+            //    Properties.Settings.Default.LastConnectedDevice = "null";
+            //    Properties.Settings.Default.Save();
+            //    TextBlock_Status.Text = "Ошибка подключения к COM порту "+ex.ToString().Take(50);
+            //    return;
             //}
+            ////try
+            ////{
+            ////    //TextBlock_Status.Text = "Try connect to port " + Properties.Settings.Default.COMName;
+            ////    //if (MainParam_SerialPort.IsOpen) MainParam_SerialPort.Close();
+
+            ////    //MainParam_SerialPort.PortName = Properties.Settings.Default.COMName;
+            ////    //MainParam_SerialPort.Handshake = Handshake.None;
+            ////    //MainParam_SerialPort.Open();
+
+            ////    //if (MainParam_SerialPort.IsOpen)
+            ////    //{
+            ////    //    TextBlock_Status.Text = "COM port is open (" + Properties.Settings.Default.COMName + ")";
+            ////    //    Label_StatusCOM.Content = "Подключено " + Properties.Settings.Default.COMName + " " + Properties.Settings.Default.COMBaudrate.ToString() + "bps";
+            ////    //    Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGreen);
+            ////    //    ComboBox_COMPorts.SelectedValue = Properties.Settings.Default.COMName;
+            ////    //}
+            ////}
+            ////catch
+            ////{
+            ////    //TextBlock_Status.Text = "COM port connect error (" + Properties.Settings.Default.COMName + ")";
+            ////    //Label_StatusCOM.Content = "Не подключено";
+            ////    //Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGray);
+            ////}
         }
 
         void System_SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -217,11 +219,11 @@ namespace LoggerDeviceValues
                     decimal value;
                     string valueRAW;
                     LabDevice.DataTypes type;
-                    if (Driver_UT71D.TryParceData(LocalBuffer, out value, out type, out valueRAW))
-                    {
-                        //Debug.WriteLine(valueRAW, type.ToString());
-                        System_NewValue(value, type, valueRAW);
-                    }
+                    //if (Driver_UT71D.TryParceData(LocalBuffer, out value, out type, out valueRAW))
+                    //{
+                    //    //Debug.WriteLine(valueRAW, type.ToString());
+                    //    System_NewValue(value, type, valueRAW);
+                    //}
                 }
             }
         }
@@ -516,16 +518,23 @@ namespace LoggerDeviceValues
         private void ComboBox_Interfaces_DropDownOpened(object sender, EventArgs e)
         {
             ComboBox_Devices.Items.Clear();
+            ComboBox_Interfaces.Items.Clear();
+            ComboBox_Interfaces.Items.Add("Доступные интерфейсы:");
             try
             {
-                string[] AviliblePorts;
-                AviliblePorts = System.IO.Ports.SerialPort.GetPortNames();
+                string[] AvilibleInterfaces = DeviceManager.ScanAvilibleInterfaces().ToArray();
+                //string[] AviliblePorts;
+                //AviliblePorts = System.IO.Ports.SerialPort.GetPortNames();
 
-                ComboBox_Interfaces.Items.Clear();
-                foreach (string currentPort in AviliblePorts) ComboBox_Interfaces.Items.Add(currentPort);
+                //ComboBox_Interfaces.Items.Clear();
+                //foreach (string currentPort in AviliblePorts) ComboBox_Interfaces.Items.Add(currentPort);
                 //var deviceList = DeviceList.Local.GetDevices(DeviceTypes.Hid).ToArray();
-                DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
-                if (MainParam_HIDDevice != null) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
+                //var deviceList2 = DeviceList.Local.GetHidDevices(vendorID: 6790, productID: 57352);
+
+                //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
+                //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
+                //if (MainParam_HIDDevice != null) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
+                foreach (string CurrentInterface in AvilibleInterfaces) ComboBox_Interfaces.Items.Add(CurrentInterface);
                 TextBlock_Status.Text = "Сканирование интерфейсов успешно завершено";
             }
             catch
@@ -536,46 +545,73 @@ namespace LoggerDeviceValues
 
         private void ComboBox_Interfaces_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ComboBox_Interfaces.SelectedIndex == -1) return;
-            if (ComboBox_Interfaces.SelectedItem.ToString().Contains("COM"))
+            if (ComboBox_Interfaces.SelectedIndex == -1 || ComboBox_Interfaces.Items.Count == 0 || ComboBox_Interfaces.SelectedItem.ToString() == "Интерфейсы") return;
+            if (!ComboBox_Interfaces.SelectedItem.ToString().Contains("-"))
             {
-                //ComboBox_Devices.Items.Clear();
+                ComboBox_Interfaces.Items.Clear();
+                ComboBox_Interfaces.Items.Add("Интерфейсы");
+                ComboBox_Interfaces.SelectedIndex = 0;
+                //Button_UserConnectToDevice.IsEnabled = false;
+            }
+            else
+            {
+                ComboBox_Devices.Items.Clear();
+                ComboBox_Devices.Items.Add("Устройства");
+                ComboBox_Devices.SelectedIndex = 0;
+            }
+            //if (ComboBox_Interfaces.SelectedItem.ToString().Contains("COM"))
+            //{
+            //    //ComboBox_Devices.Items.Clear();
 
-                ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
-                //ComboBox_Devices.SelectedIndex = 0;
-            }
-            if (ComboBox_Interfaces.SelectedItem.ToString().Contains("USB to Serial"))
-            {
-                //ComboBox_Devices.Items.Clear();
-                //ComboBoxItem CBI = new ComboBoxItem(); 
-                ComboBox_Devices.Items.Add(new ComboBoxItem().Content=LabDevice.SupportedDevices.UT71D.ToString());
-                //ComboBox_Devices.SelectedIndex = 0;
-            }
+                //    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
+                //    //ComboBox_Devices.SelectedIndex = 0;
+                //}
+                //if (ComboBox_Interfaces.SelectedItem.ToString().Contains("USB to Serial"))
+                //{
+                //    //ComboBox_Devices.Items.Clear();
+                //    //ComboBoxItem CBI = new ComboBoxItem(); 
+                //    ComboBox_Devices.Items.Add(new ComboBoxItem().Content=LabDevice.SupportedDevices.UT71D.ToString());
+                //    //ComboBox_Devices.SelectedIndex = 0;
+                //}
         }
 
         private void ComboBox_Devices_DropDownOpened(object sender, EventArgs e)
         {
+            ComboBox_Devices.Items.Clear();
+            ComboBox_Devices.Items.Add("Доступные устройства:");
+            if (ComboBox_Interfaces.SelectedIndex>0 && ComboBox_Interfaces.SelectedItem.ToString().Contains('-'))
+            {
+                if (ComboBox_Interfaces.SelectedItem.ToString().Split('-')[1].Contains("USB HID Device"))
+                {
+                    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT71D.ToString());
+                }
+            }
             
         }
 
         private void ComboBox_Devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ComboBox_Devices.SelectedIndex == -1) return;
-            if (ComboBox_Devices.SelectedItem.ToString().Contains(LabDevice.SupportedDevices.UT71D.ToString()))
-            {
-                Properties.Settings.Default.LastConnectedDevice = LabDevice.SupportedDevices.UT71D.ToString();
-                Properties.Settings.Default.Save();
-                System_ConnectToDeviceFromAppSettings();
-                TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
-            }
-            if (ComboBox_Devices.SelectedItem.ToString().Contains(LabDevice.SupportedDevices.HP53132A.ToString()))
-            {
-                Properties.Settings.Default.LastConnectedDevice = LabDevice.SupportedDevices.HP53132A.ToString();
-                Properties.Settings.Default.LastConfig = ComboBox_Interfaces.SelectedItem.ToString() + " 19200 ";
-                Properties.Settings.Default.Save();
-                System_ConnectToDeviceFromAppSettings();
-                TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
-            }
+            //if (ComboBox_Devices.SelectedIndex == -1) return;
+            //if (ComboBox_Devices.SelectedItem.ToString().Contains(LabDevice.SupportedDevices.UT71D.ToString()))
+            //{
+            //    Properties.Settings.Default.LastConnectedDevice = LabDevice.SupportedDevices.UT71D.ToString();
+            //    Properties.Settings.Default.Save();
+            //    System_ConnectToDeviceFromAppSettings();
+            //    TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            //}
+            //if (ComboBox_Devices.SelectedItem.ToString().Contains(LabDevice.SupportedDevices.HP53132A.ToString()))
+            //{
+            //    Properties.Settings.Default.LastConnectedDevice = LabDevice.SupportedDevices.HP53132A.ToString();
+            //    Properties.Settings.Default.LastConfig = ComboBox_Interfaces.SelectedItem.ToString() + " 19200 ";
+            //    Properties.Settings.Default.Save();
+            //    System_ConnectToDeviceFromAppSettings();
+            //    TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            //}
+        }
+
+        private void Button_UserConnectToDevice_Click(object sender, RoutedEventArgs e)
+        {
+            DeviceManager.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), LabDevice.SupportedDevices.UT71D.ToString());
         }
 
         private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)

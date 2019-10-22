@@ -90,6 +90,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DeviceManager.cs" />
     <Compile Include="Driver_HP53132A.cs" />
     <Compile Include="Driver_UT71D.cs" />
     <Compile Include="LabDevice.cs" />

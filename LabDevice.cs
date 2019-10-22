@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,10 +9,10 @@ namespace LoggerDeviceValues
 {
     public class LabDevice
     {
-        public enum DeviceTypes
-        {
-            Serial, USB_HID
-        }
+        //public enum DeviceTypes
+        //{
+        //    Serial, USB_HID
+        //}
 
         public enum SupportedDevices
         {
@@ -21,6 +22,18 @@ namespace LoggerDeviceValues
         public enum DataTypes
         {
             Freq, Voltage, Resistance, Capacity, Temperature, Current, Abstract
+        }
+
+        public SupportedDevices DeviceName;
+        public DataTypes DataType;
+        public int CounterMeasure;
+        public List<int> MillsBetweenMeasure;
+
+        public void NewValue(decimal value)
+        {
+            Debug.WriteLine(value);
+            //graph
+            //file
         }
 
         public static String ConvertScientific(decimal value, DataTypes type)

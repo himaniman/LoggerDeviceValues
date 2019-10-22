@@ -37,6 +37,7 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -48,7 +49,8 @@
                                 <ComboBox Grid.Column="1" Name="ComboBox_Devices" Margin="5,5,5,5" VerticalAlignment="Top" DropDownOpened="ComboBox_Devices_DropDownOpened" SelectionChanged="ComboBox_Devices_SelectionChanged" SelectedIndex="0" Background="{x:Null}">
                                     <ComboBoxItem Content="Устройства"/>
                                 </ComboBox>
-                                <Button Grid.Row="1" Grid.ColumnSpan="2" Margin="5,5,5,5" Content="Открыть файл"/>
+                                <Button Grid.Row="1" Name="Button_UserConnectToDevice" Grid.ColumnSpan="2" Margin="5,5,5,5" Content="Подключить устройство" Click="Button_UserConnectToDevice_Click"/>
+                                <Button Grid.Row="2" Grid.ColumnSpan="2" Margin="5,5,5,5" Content="Открыть файл"/>
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Сохранение в файл" Margin="5,5,5,5" IsEnabled="False">
