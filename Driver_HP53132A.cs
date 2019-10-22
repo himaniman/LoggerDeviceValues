@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LoggerDeviceValues
 {
-    public class Driver_HP53132A : LabDevice
+    public class Driver_HP53132A
     {
         //public double CurrentValue;
         //public int DataType;

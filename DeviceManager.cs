@@ -14,6 +14,7 @@ namespace LoggerDeviceValues
         //public List<Thread> ReadThreads;
         static HidDevice[] HidDeviceList;
         static List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
+        static List<Driver_UT61C> Devices_UT61C = new List<Driver_UT61C>();
 
         public static List<string> ScanAvilibleInterfaces()
         {
@@ -35,11 +36,18 @@ namespace LoggerDeviceValues
                 if (_Device == LabDevice.SupportedDevices.UT71D.ToString())
                 {
                     //Devices_UT71D.check for equals может до этого мы уже подключались, обработать
-                    Devices.Add(new LabDevice());
+                    Devices.Add(new LabDevice(LabDevice.SupportedDevices.UT71D, LabDevice.DataTypes.Abstract));
                     Devices_UT71D.Add(new Driver_UT71D(Devices.ElementAt(Devices.Count-1))); //сюда бросить ид девайса для того чтобы он знал куда бросать данные при приеме
                     Devices_UT71D.ElementAt(Devices_UT71D.Count - 1).Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
                 }
-                
+                if (_Device == LabDevice.SupportedDevices.UT61C.ToString())
+                {
+                    //Devices_UT71D.check for equals может до этого мы уже подключались, обработать
+                    Devices.Add(new LabDevice(LabDevice.SupportedDevices.UT61C, LabDevice.DataTypes.Temperature));
+                    Devices_UT61C.Add(new Driver_UT61C(Devices.ElementAt(Devices.Count - 1))); //сюда бросить ид девайса для того чтобы он знал куда бросать данные при приеме
+                    Devices_UT61C.ElementAt(Devices_UT61C.Count - 1).Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
+                }
+
             }
                 
             return true;

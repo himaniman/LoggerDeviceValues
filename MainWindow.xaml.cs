@@ -50,7 +50,7 @@ namespace LoggerDeviceValues
         public HidDevice MainParam_HIDDevice;
         public HidStream MainParam_HIDStream;
 
-        public PlotModel MainChartModel { get; set; }
+        public static PlotModel MainChartModel { get; set; }
         //public GearedValues<MeasureModel> MainChartValues { get; set; }
         //public GearedValues<MeasureModel> AllChartValues { get; set; }
         public Func<double, string> DateTimeFormatter { get; set; }
@@ -313,10 +313,10 @@ namespace LoggerDeviceValues
             }
         }
 
-        public void System_AddValueToGraph(decimal value, LabDevice.DataTypes type)
+        public static void System_AddValueToGraph(decimal value, LabDevice.DataTypes type)
         {
-            (MainChartModel.Series[0] as LineSeries).Points.Add(new DataPoint((double)value, (double)value));
-            MainChart.InvalidatePlot();
+            (MainChartModel.Series[0] as LineSeries).Points.Add(new DataPoint(((MainChartModel.Series[0] as LineSeries).Points.Count), (double)value));
+            //MainChart.InvalidatePlot();
             //if (MainChartValues.Count == 0)
             //{
             //    SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
@@ -584,6 +584,7 @@ namespace LoggerDeviceValues
                 if (ComboBox_Interfaces.SelectedItem.ToString().Split('-')[1].Contains("USB HID Device"))
                 {
                     ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT71D.ToString());
+                    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT61C.ToString());
                 }
             }
             
@@ -611,7 +612,7 @@ namespace LoggerDeviceValues
 
         private void Button_UserConnectToDevice_Click(object sender, RoutedEventArgs e)
         {
-            DeviceManager.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), LabDevice.SupportedDevices.UT71D.ToString());
+            DeviceManager.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), ComboBox_Devices.SelectedItem.ToString());
         }
 
         private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)

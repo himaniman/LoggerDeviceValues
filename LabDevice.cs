@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace LoggerDeviceValues
 
         public enum SupportedDevices
         {
-            HP53132A, UT71D
+            HP53132A, UT71D, UT61C
         }
 
         public enum DataTypes
@@ -24,16 +25,67 @@ namespace LoggerDeviceValues
             Freq, Voltage, Resistance, Capacity, Temperature, Current, Abstract
         }
 
+        StreamWriter StreamWriter;
         public SupportedDevices DeviceName;
         public DataTypes DataType;
         public int CounterMeasure;
         public List<int> MillsBetweenMeasure;
 
+        public LabDevice(SupportedDevices _currentDevice, DataTypes _currentDataType)
+        {
+            DeviceName = _currentDevice;
+            DataType = _currentDataType;
+        }
+
         public void NewValue(decimal value)
         {
             Debug.WriteLine(value);
+            AddValueToFile(value, LabDevice.DataTypes.Abstract, "");
             //graph
             //file
+            MainWindow.System_AddValueToGraph(value, DataTypes.Abstract);
+        }
+
+        public void AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
+        {
+            if (StreamWriter == null) StreamWriter = File.CreateText(
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" +
+                "Log_Measure_" + DeviceName.ToString() + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt");
+
+
+            string StringForBurnToFile = "";
+            //if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            //else
+            //{
+            //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+            //    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
+            //}
+            StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+            StreamWriter.WriteLine(StringForBurnToFile);
+            StreamWriter.Flush();
+            //try
+            //{
+            //    if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
+            //    {
+            //        MainParam_StreamWriter.Flush();
+            //        if (MainParam_CounterMeasure_End == 0)
+            //        {
+            //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+            //            //TextBlock_StatusBurn.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "\nОкончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+            //        }
+            //        else
+            //        {
+            //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание в ~" + DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - MainParam_CounterMeasure) * MainParam_MillsBetweenMeasure.Average()).ToString("dd/MM/yyyy HH:mm:ss");
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
+            //}
+
         }
 
         public static String ConvertScientific(decimal value, DataTypes type)
