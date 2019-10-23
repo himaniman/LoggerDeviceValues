@@ -13,8 +13,8 @@ namespace LoggerDeviceValues
         static public List<LabDevice> Devices = new List<LabDevice>();
         //public List<Thread> ReadThreads;
         static HidDevice[] HidDeviceList;
-        static List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
-        static List<Driver_UT61C> Devices_UT61C = new List<Driver_UT61C>();
+        static public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
+        static public List<Driver_UT61C> Devices_UT61C = new List<Driver_UT61C>();
 
         public static List<string> ScanAvilibleInterfaces()
         {

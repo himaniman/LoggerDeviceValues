@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LoggerDeviceValues
 {
-    class Driver_UT61C
+    public class Driver_UT61C
     {
         byte[] LocalBuffer;
         byte[] HIDBuffer;
@@ -91,7 +91,14 @@ namespace LoggerDeviceValues
                     Resoult += (LocalBuffer[CurrentStart + 3] & 0x0F) * 100;
                     Resoult += (LocalBuffer[CurrentStart + 4] & 0x0F) * 10;
                     Resoult += (LocalBuffer[CurrentStart + 5] & 0x0F);
-                    CurrentType = LabDevice.DataTypes.Temperature;
+
+                    if (LocalBuffer[CurrentStart + 7] == 49) Resoult /= 1000;
+                    if (LocalBuffer[CurrentStart + 7] == 50) Resoult /= 100;
+                    if (LocalBuffer[CurrentStart + 7] == 52) Resoult /= 10;
+
+                    if (LocalBuffer[CurrentStart + 10] == 32) Resoult *= 1000;
+                    if (LocalBuffer[CurrentStart + 10] == 16) Resoult *= 1000000;
+                    CurrentType = LabDevice.DataTypes.Resistance;
 
                     ////int multiplex = 1000;
                     ////int devider = 1;

@@ -63,6 +63,7 @@ namespace LoggerDeviceValues
             //}
             StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
             StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+            StringForBurnToFile += "\t" + DateTime.Now.TimeOfDay.TotalSeconds.ToString();
             StreamWriter.WriteLine(StringForBurnToFile);
             StreamWriter.Flush();
             //try

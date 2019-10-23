@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LoggerDeviceValues
 {
-    class Driver_UT71D
+    public class Driver_UT71D
     {
         public static double[,] multlut  = new double[17,8] {
             { 1e-5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
@@ -21,7 +21,7 @@ namespace LoggerDeviceValues
             { 1e-1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             { 1e-8, 1e-7, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             { 1e-6, 1e-5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-            { 1.0, 1e1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+            { 1.0, 1e-3, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             { 1e-2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             { 1e-4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             { 1e-3, 1e-2, 1e-1, 1.0, 1e1, 1e2, 1e3, 1e4},

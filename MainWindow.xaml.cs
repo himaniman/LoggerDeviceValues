@@ -838,6 +838,19 @@ namespace LoggerDeviceValues
             System_AddValueToGraph((decimal)(rnd.NextDouble() * 100), LabDevice.DataTypes.Voltage);
         }
 
+        private void Window_Shutdown(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            foreach(Driver_UT71D CurrentDevice in DeviceManager.Devices_UT71D)
+            {
+                CurrentDevice.Disconnect();
+            }
+            foreach (Driver_UT61C CurrentDevice in DeviceManager.Devices_UT61C)
+            {
+                CurrentDevice.Disconnect();
+            }
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+        }
+
         //private void CheckBox_AnimatedGraph_Click(object sender, RoutedEventArgs e)
         //{
         //    if (CheckBox_AnimatedGraph.IsChecked.Value) MainChart.DisableAnimations = false;
