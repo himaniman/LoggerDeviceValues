@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,12 +18,19 @@ namespace LoggerDeviceValues
 
         public enum SupportedDevices
         {
-            HP53132A, UT71D, UT61C
+            HP53132A, UT71D, UT61C, Virtual
         }
 
         public enum DataTypes
         {
             Freq, Voltage, Resistance, Capacity, Temperature, Current, Abstract
+        }
+
+        public struct MeasureStruct
+        {
+            public decimal Val;
+            public DataTypes Typ;
+            public DateTime TS;
         }
 
         StreamWriter StreamWriter;
@@ -31,19 +39,34 @@ namespace LoggerDeviceValues
         public int CounterMeasure;
         public List<int> MillsBetweenMeasure;
 
+        public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
+
+        //public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
+        public Driver_VirtualDevice Obj_Driver_VirtualDevice;
+
+        public LabDevice()
+        {
+
+        }
+
         public LabDevice(SupportedDevices _currentDevice, DataTypes _currentDataType)
         {
             DeviceName = _currentDevice;
             DataType = _currentDataType;
+            //if (_currentDevice == SupportedDevices.UT71D) Devices_UT71D.Add(new Driver_UT71D(NewValue)); //binding method for compute and storage new value
+            if (_currentDevice == SupportedDevices.Virtual) { Obj_Driver_VirtualDevice = new Driver_VirtualDevice(NewValue); Obj_Driver_VirtualDevice.Connect(); }
         }
 
-        public void NewValue(decimal value)
+        public delegate void NewValueDelegate(decimal value, DataTypes type);
+        public void NewValue(decimal value, DataTypes type) //exec from thread in driver
         {
             Debug.WriteLine(value);
-            AddValueToFile(value, LabDevice.DataTypes.Abstract, "");
+            QueueNewValues.Enqueue(new MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
+            //записать себе, чтобы потом с другого потока кто то мог взять эти данные, + отправить текущие данные в хост приложение
+            //AddValueToFile(value, LabDevice.DataTypes.Abstract, "");
             //graph
             //file
-            MainWindow.System_AddValueToGraph(value, DataTypes.Abstract);
+            //MainWindow.System_AddValueToGraph(value, DataTypes.Abstract);
         }
 
         public void AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)

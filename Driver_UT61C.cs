@@ -56,7 +56,7 @@ namespace LoggerDeviceValues
                     {
                         //Debug.WriteLine(valueRAW, type.ToString());
                         //System_NewValue(value, type, valueRAW);
-                        TargetLabDevice.NewValue(value);
+                        ////TargetLabDevice.NewValue(value);
                     }
                 }
             }

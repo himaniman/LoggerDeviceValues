@@ -32,6 +32,7 @@ using System.Threading;
 
 using OxyPlot;
 using OxyPlot.Series;
+using OxyPlot.Axes;
 
 namespace LoggerDeviceValues
 {
@@ -81,6 +82,11 @@ namespace LoggerDeviceValues
         public List<int> MainParam_MillsBetweenMeasure;
 
         public bool AcceptProccessData;
+
+        public Thread ThreadAwaitData_Discriptor;
+        DeviceManager DeviceManager_Obj;
+
+        public List<RadioButton> VisibleDevices { get; set; }
 
         //var MainParam_CurrentDevice = new LabDevice();
 
@@ -241,7 +247,7 @@ namespace LoggerDeviceValues
                         decimal value;
                         Driver_HP53132A.TryParceData(new string(MainParam_InputBuffer.Take(MainParam_InputBuffer.IndexOf('\n')).ToArray()), out value);
                         System_NewValue(value, LabDevice.DataTypes.Voltage, new string(MainParam_InputBuffer.Replace("\r", "").Take(MainParam_InputBuffer.IndexOf('\n')).ToArray()));
-                        MainParam_InputBuffer = new string(MainParam_InputBuffer.Skip(MainParam_InputBuffer.IndexOf('\n')+1).ToArray());                        
+                        MainParam_InputBuffer = new string(MainParam_InputBuffer.Skip(MainParam_InputBuffer.IndexOf('\n') + 1).ToArray());
                     }
                 }
             }
@@ -272,7 +278,7 @@ namespace LoggerDeviceValues
                 }
             }
 
-            System_AddValueToGraph(value, type);
+            //System_AddValueToGraph(value, type);
 
             if ((bool)RadioButton_FixedPoint.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertFixedPoint(value, type);
             if ((bool)RadioButton_Scientific.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertScientific(value, type);
@@ -285,7 +291,7 @@ namespace LoggerDeviceValues
             MainParam_PastMeasure = DateTime.Now;
             if (MainParam_MillsBetweenMeasure.Count > 10) MainParam_MillsBetweenMeasure.RemoveAt(0);
 
-            if (MainParam_CounterMeasure>0 && MainParam_MillsBetweenMeasure.Sum()>0) TextBlock_FreqMeasure.Text = (60 / (MainParam_MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
+            if (MainParam_CounterMeasure > 0 && MainParam_MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (MainParam_MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
 
             if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
             {
@@ -304,7 +310,7 @@ namespace LoggerDeviceValues
                         " (ETA: " + TimeSpan.FromMilliseconds(
                             (MainParam_CounterMeasure_End - MainParam_CounterMeasure) *
                             MainParam_MillsBetweenMeasure.Average()
-                            ).ToString(@"d\.hh\:mm\:ss")+")";
+                            ).ToString(@"d\.hh\:mm\:ss") + ")";
                     if (MainParam_CounterMeasure_End == MainParam_CounterMeasure)
                     {
                         Button_FileBurnStart_Click(null, null);
@@ -313,10 +319,11 @@ namespace LoggerDeviceValues
             }
         }
 
-        public static void System_AddValueToGraph(decimal value, LabDevice.DataTypes type)
+        public void System_AddValueToGraph(decimal value, LabDevice.DataTypes type, DateTime time)
         {
-            (MainChartModel.Series[0] as LineSeries).Points.Add(new DataPoint(((MainChartModel.Series[0] as LineSeries).Points.Count), (double)value));
-            //MainChart.InvalidatePlot();
+            (MainChartModel.Series[0] as LineSeries).Points.Add(new DataPoint(DateTimeAxis.ToDouble(time), (double)value));
+            if ((MainChartModel.Series[0] as LineSeries).Points.Count > 150) (MainChartModel.Series[0] as LineSeries).Points.RemoveAt(0);
+            MainChart.InvalidatePlot();
             //if (MainChartValues.Count == 0)
             //{
             //    SolidColorBrush NewColor = new SolidColorBrush(Colors.Blue);
@@ -393,9 +400,9 @@ namespace LoggerDeviceValues
             }
             catch (Exception ex)
             {
-                TextBlock_Status.Text = "Ошибка записи "+ ex.ToString();
+                TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
             }
-            
+
         }
 
         public void System_LogMessage(String _text)
@@ -440,22 +447,43 @@ namespace LoggerDeviceValues
             InitializeComponent();
             DataContext = this;
 
-            MainChartModel = new PlotModel {};
-            var s1 = new LineSeries
+            DateTimeAxis xAxis = new DateTimeAxis
             {
-                StrokeThickness = 1,
-                MarkerSize = 3,
-                MarkerStroke = OxyColors.ForestGreen,
-                MarkerType = MarkerType.Plus
+                Position = AxisPosition.Bottom,
+                StringFormat = "HH:mm:ss",
+
+                Title = "Время",
+                MinorIntervalType = DateTimeIntervalType.Minutes,
+                IntervalType = DateTimeIntervalType.Minutes,
+                //MajorGridlineStyle = LineStyle.Solid,
+                //MinorGridlineStyle = LineStyle.None,
             };
 
+            FunctionSeries fs = new FunctionSeries();
 
-            s1.Points.Add(new DataPoint(1, 1));
-            s1.Points.Add(new DataPoint(2, 2));
-            s1.Points.Add(new DataPoint(3, 1));
+            MainChartModel = new PlotModel();
+
+            MainChartModel.Series.Add(fs);
+
+            MainChartModel.Axes.Add(xAxis);
+            MainChartModel.Axes.Add(new LinearAxis());
 
 
-            MainChartModel.Series.Add(s1);
+            //var s1 = new LineSeries
+            //{
+            //    StrokeThickness = 1,
+            //    MarkerSize = 3,
+            //    MarkerStroke = OxyColors.ForestGreen,
+            //    MarkerType = MarkerType.Plus
+            //};
+
+
+            ////s1.Points.Add(new DataPoint(1, 1));
+            ////s1.Points.Add(new DataPoint(2, 2));
+            ////s1.Points.Add(new DataPoint(3, 1));
+
+
+            //MainChartModel.Series.Add(s1);
 
 
             //MainChartModel.Axes[0].Title = "asdas";
@@ -484,7 +512,7 @@ namespace LoggerDeviceValues
 
             if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
                 TextBox_FileName.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
-            else TextBox_FileName.Text = "Logger_Measure_"+ Properties.Settings.Default.LastConnectedDevice+ " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            else TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
 
             YFormatter = value => value.ToString("e");
 
@@ -512,7 +540,58 @@ namespace LoggerDeviceValues
             System_LogMessage("asdas3 sdfsdfdsfdsf ds1");
             System_LogMessage("asdas3 sdfsdfdsfdsf ds2");
             System_LogMessage("asdas3 sdfsdfdsfdsf ds3");
+
+            ListView_CurrentDev.Items.Add(new ListBoxItem()
+            {
+                Content = " #1 UT70D V ",
+                Background = new SolidColorBrush(Color.FromArgb(0x7f, 0xff, 0x00, 0x00)),
+                IsChecked = true,
+            });
+
+            ListView_CurrentDev.Items.Add(new ListBoxItem()
+            {
+                Content = " #1 UT61C A ",
+                Background = new SolidColorBrush(Colors.Transparent)
+            });
+
+            //(ListView_CurrentDev.Items[0] as ListBoxItem).
+
+            //(ListView_CurrentDev.Items[0] as ListBoxItem).DataContext = new SolidColorBrush(Colors.Red);
+
+            //VisibleDevices = new List<RadioButton>();
+
+            //VisibleDevices.Add(new RadioButton() { Content = "asd" });
+
+
+
             //System.Drawing.SystemIcons.Information
+            DeviceManager_Obj = new DeviceManager();
+            ThreadAwaitData_Discriptor = new Thread(AwaitData);
+            ThreadAwaitData_Discriptor.Start();
+            DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
+        }
+
+        public void AwaitData()
+        {
+            while (true)
+            {
+                for (int i = 0; i < DeviceManager_Obj.Devices.Count; i++)
+                {
+                    if (!DeviceManager_Obj.Devices[i].QueueNewValues.IsEmpty)
+                    {
+                        LabDevice.MeasureStruct measure;
+                        DeviceManager_Obj.Devices[i].QueueNewValues.TryDequeue(out measure);
+                        System_AddValueToGraph(measure.Val, measure.Typ, measure.TS);
+                        //write file, show graph
+                    }
+                }
+            }
+
+        }
+
+        public void UpdateRealtimeData()
+        {
+
         }
 
         private void ComboBox_Interfaces_DropDownOpened(object sender, EventArgs e)
@@ -522,7 +601,7 @@ namespace LoggerDeviceValues
             ComboBox_Interfaces.Items.Add("Доступные интерфейсы:");
             try
             {
-                string[] AvilibleInterfaces = DeviceManager.ScanAvilibleInterfaces().ToArray();
+                ////////////////////////string[] AvilibleInterfaces = DeviceManager.ScanAvilibleInterfaces().ToArray();
                 //string[] AviliblePorts;
                 //AviliblePorts = System.IO.Ports.SerialPort.GetPortNames();
 
@@ -534,7 +613,7 @@ namespace LoggerDeviceValues
                 //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
                 //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
                 //if (MainParam_HIDDevice != null) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
-                foreach (string CurrentInterface in AvilibleInterfaces) ComboBox_Interfaces.Items.Add(CurrentInterface);
+                /////////////////////foreach (string CurrentInterface in AvilibleInterfaces) ComboBox_Interfaces.Items.Add(CurrentInterface);
                 TextBlock_Status.Text = "Сканирование интерфейсов успешно завершено";
             }
             catch
@@ -563,23 +642,23 @@ namespace LoggerDeviceValues
             //{
             //    //ComboBox_Devices.Items.Clear();
 
-                //    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
-                //    //ComboBox_Devices.SelectedIndex = 0;
-                //}
-                //if (ComboBox_Interfaces.SelectedItem.ToString().Contains("USB to Serial"))
-                //{
-                //    //ComboBox_Devices.Items.Clear();
-                //    //ComboBoxItem CBI = new ComboBoxItem(); 
-                //    ComboBox_Devices.Items.Add(new ComboBoxItem().Content=LabDevice.SupportedDevices.UT71D.ToString());
-                //    //ComboBox_Devices.SelectedIndex = 0;
-                //}
+            //    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
+            //    //ComboBox_Devices.SelectedIndex = 0;
+            //}
+            //if (ComboBox_Interfaces.SelectedItem.ToString().Contains("USB to Serial"))
+            //{
+            //    //ComboBox_Devices.Items.Clear();
+            //    //ComboBoxItem CBI = new ComboBoxItem(); 
+            //    ComboBox_Devices.Items.Add(new ComboBoxItem().Content=LabDevice.SupportedDevices.UT71D.ToString());
+            //    //ComboBox_Devices.SelectedIndex = 0;
+            //}
         }
 
         private void ComboBox_Devices_DropDownOpened(object sender, EventArgs e)
         {
             ComboBox_Devices.Items.Clear();
             ComboBox_Devices.Items.Add("Доступные устройства:");
-            if (ComboBox_Interfaces.SelectedIndex>0 && ComboBox_Interfaces.SelectedItem.ToString().Contains('-'))
+            if (ComboBox_Interfaces.SelectedIndex > 0 && ComboBox_Interfaces.SelectedItem.ToString().Contains('-'))
             {
                 if (ComboBox_Interfaces.SelectedItem.ToString().Split('-')[1].Contains("USB HID Device"))
                 {
@@ -587,7 +666,7 @@ namespace LoggerDeviceValues
                     ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT61C.ToString());
                 }
             }
-            
+
         }
 
         private void ComboBox_Devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -612,7 +691,7 @@ namespace LoggerDeviceValues
 
         private void Button_UserConnectToDevice_Click(object sender, RoutedEventArgs e)
         {
-            DeviceManager.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), ComboBox_Devices.SelectedItem.ToString());
+            //DeviceManager.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), ComboBox_Devices.SelectedItem.ToString());
         }
 
         private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)
@@ -815,7 +894,7 @@ namespace LoggerDeviceValues
         {
             string StringForBurnToFile = "";
             Random rnd = new Random();
-            decimal value = (decimal)rnd.NextDouble()*3000;
+            decimal value = (decimal)rnd.NextDouble() * 3000;
             LabDevice.DataTypes type = (LabDevice.DataTypes)rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length);
             StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
             if (CheckBox_BurnFixedPoint.IsChecked.Value) StringForBurnToFile += " " + LabDevice.ConvertFixedPoint(value, type);
@@ -834,20 +913,20 @@ namespace LoggerDeviceValues
 
         private void Button_SaveCurrentData_Click(object sender, RoutedEventArgs e)
         {
-            Random rnd = new Random();
-            System_AddValueToGraph((decimal)(rnd.NextDouble() * 100), LabDevice.DataTypes.Voltage);
+            //Random rnd = new Random();
+            //System_AddValueToGraph((decimal)(rnd.NextDouble() * 100), LabDevice.DataTypes.Voltage);
         }
 
         private void Window_Shutdown(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            foreach(Driver_UT71D CurrentDevice in DeviceManager.Devices_UT71D)
-            {
-                CurrentDevice.Disconnect();
-            }
-            foreach (Driver_UT61C CurrentDevice in DeviceManager.Devices_UT61C)
-            {
-                CurrentDevice.Disconnect();
-            }
+            //foreach(Driver_UT71D CurrentDevice in DeviceManager.Devices_UT71D)
+            //{
+            //    CurrentDevice.Disconnect();
+            //}
+            //foreach (Driver_UT61C CurrentDevice in DeviceManager.Devices_UT61C)
+            //{
+            //    CurrentDevice.Disconnect();
+            //}
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 

@@ -8,6 +8,11 @@
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
         Title="Logger Device Values v0.3 filename" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
+    <Window.Resources>
+        <Canvas x:Key="Work" Width="28" Height="15">
+            <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
+        </Canvas>
+    </Window.Resources>
     <DockPanel>
         <!--<Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
@@ -118,18 +123,43 @@
                 <TabItem Header="Текущие измерения">
                     <Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="auto"/>
                             <RowDefinition Height="40"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="85"/>
                         </Grid.RowDefinitions>
-                        <GroupBox Grid.Row="0" Margin="10,5,10,5">
-                            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+                        <ListView Grid.Row="0" Name="ListView_CurrentDev" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" Margin="10,5,10,5">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Focusable" Value="False"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <RadioButton Name="Button_LogEvent" Style="{StaticResource {x:Type ToggleButton}}" GroupName="Devices" Content="{Binding Path=Content}" Background="{Binding Path=Background}" IsChecked="{Binding Path=IsChecked}">
+                                            <!--<StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Path=Content}"/>
+                                                <Canvas>
+                                                    <Path Data="{Binding Source={StaticResource Work}}"/>
+                                                </Canvas>
+                                            </StackPanel>
+                                            --><!--<Image Source="Start.ico"/>-->
+                                        </RadioButton>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListView>
+                            <!--<ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
                                 <StackPanel Orientation="Horizontal">
-                                    <Button Content="   UT70D   "/>
+                                    <Button Margin="5,5,5,5" Content="#1 [V] UT70D"/>
                                 </StackPanel>
-                            </ScrollViewer>
-                        </GroupBox>
+                            </ScrollViewer>-->
                         <Grid Grid.Row="1" Margin="10,10,10,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -193,7 +223,7 @@
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                         </lvc:CartesianChart>-->
-                        <TextBlock Grid.Row="2" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Hidden"/>
+                        <TextBlock Grid.Row="2" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Visible"/>
                         <Grid Grid.Row="3">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="30"/>
