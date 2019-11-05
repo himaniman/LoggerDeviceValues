@@ -88,6 +88,8 @@ namespace LoggerDeviceValues
 
         public List<RadioButton> VisibleDevices { get; set; }
 
+        int Global_SelectedDevice;
+
         //var MainParam_CurrentDevice = new LabDevice();
 
         public void System_ConnectToDeviceFromAppSettings()
@@ -514,10 +516,7 @@ namespace LoggerDeviceValues
                 TextBox_FileName.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
             else TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
 
-            YFormatter = value => value.ToString("e");
-
-            ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
-            ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT71D.ToString());
+            //YFormatter = value => value.ToString("e");
 
             //MainParam_DeviceType = LabDevice.DeviceTypes.Serial;
             //MainParam_DeviceName = LabDevice.SupportedDevices.HP53132A;
@@ -541,20 +540,25 @@ namespace LoggerDeviceValues
             System_LogMessage("asdas3 sdfsdfdsfdsf ds2");
             System_LogMessage("asdas3 sdfsdfdsfdsf ds3");
 
-            ListView_CurrentDev.Items.Add(new ListBoxItem()
-            {
-                Content = " #1 UT70D V ",
-                Background = new SolidColorBrush(Color.FromArgb(0x7f, 0xff, 0x00, 0x00)),
-                IsChecked = true,
-            });
+            //ListView_CurrentDev.Items.Add(new ListBoxItem()
+            //{
+            //    Content = " #1 UT70D V ",
+            //    Background = new SolidColorBrush(Color.FromArgb(0x7f, 0xff, 0x00, 0x00)),
+            //    IsSelected = true,
+            //    Tag = "2",
+            //    //IsChecked = true,
+            //});
 
-            ListView_CurrentDev.Items.Add(new ListBoxItem()
-            {
-                Content = " #1 UT61C A ",
-                Background = new SolidColorBrush(Colors.Transparent)
-            });
+            //ListView_CurrentDev.Items.Add(new ListBoxItem()
+            //{
+            //    Content = " #1 UT61C A ",
+            //    Background = new SolidColorBrush(Colors.Transparent)
+            //});
 
-            //(ListView_CurrentDev.Items[0] as ListBoxItem).
+
+
+            //(ListView_CurrentDev.Items[1] as ListBoxItem).IsSelected = true;
+            //(ListView_CurrentDev.Items[0] as ListBoxItem).IsSelected = false;
 
             //(ListView_CurrentDev.Items[0] as ListBoxItem).DataContext = new SolidColorBrush(Colors.Red);
 
@@ -565,112 +569,129 @@ namespace LoggerDeviceValues
 
 
             //System.Drawing.SystemIcons.Information
-            DeviceManager_Obj = new DeviceManager();
-            ThreadAwaitData_Discriptor = new Thread(AwaitData);
-            ThreadAwaitData_Discriptor.Start();
-            DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
+            DeviceManager_Obj = new DeviceManager(EventNewValue);
+            //ThreadAwaitData_Discriptor = new Thread(DeviceManager_Obj.AwaitData);
+            //ThreadAwaitData_Discriptor.Start();
+            //DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
         }
 
-        public void AwaitData()
-        {
-            while (true)
-            {
-                for (int i = 0; i < DeviceManager_Obj.Devices.Count; i++)
-                {
-                    if (!DeviceManager_Obj.Devices[i].QueueNewValues.IsEmpty)
-                    {
-                        LabDevice.MeasureStruct measure;
-                        DeviceManager_Obj.Devices[i].QueueNewValues.TryDequeue(out measure);
-                        System_AddValueToGraph(measure.Val, measure.Typ, measure.TS);
-                        //write file, show graph
-                    }
-                }
-            }
+        public delegate void EventNewValueDelegate(LabDevice.MeasureStruct value, LabDevice device);
 
+        public void EventNewValue(LabDevice.MeasureStruct measure, LabDevice device)
+        {
+            System_AddValueToGraph(measure.Val, measure.Typ, measure.TS);
+            this.Dispatcher.Invoke(() => UpdateLifeValuesForCurrentDevice());
         }
 
-        public void UpdateRealtimeData()
+        public void UpdateLifeValuesForCurrentDevice()
         {
-
+            TextBlock_CurrentValue.Text = DeviceManager_Obj.Devices[Global_SelectedDevice].DataType.ToString();
         }
 
         private void ComboBox_Interfaces_DropDownOpened(object sender, EventArgs e)
         {
-            ComboBox_Devices.Items.Clear();
+            ComboBox_Devices_DropDownOpened(null, null);
+            TextBlock_InterfaceMessage.Visibility = Visibility.Visible;
             ComboBox_Interfaces.Items.Clear();
-            ComboBox_Interfaces.Items.Add("Доступные интерфейсы:");
-            try
-            {
-                ////////////////////////string[] AvilibleInterfaces = DeviceManager.ScanAvilibleInterfaces().ToArray();
-                //string[] AviliblePorts;
-                //AviliblePorts = System.IO.Ports.SerialPort.GetPortNames();
+            string[] AvilibleInterfaces = DeviceManager_Obj.ScanAvilibleInterfaces().ToArray();
+            foreach (string CurrentInterface in AvilibleInterfaces) ComboBox_Interfaces.Items.Add(CurrentInterface);
+            TextBlock_Status.Text = "Сканирование интерфейсов успешно завершено";
+            //ComboBox_Devices.Items.Clear();
+            //ComboBox_Interfaces.Items.Clear();
+            //ComboBox_Interfaces.Items.Add("Доступные интерфейсы:");
+            //try
+            //{
+            //    string[] AvilibleInterfaces = DeviceManager_Obj.ScanAvilibleInterfaces().ToArray();
+            //    //string[] AviliblePorts;
+            //    //AviliblePorts = System.IO.Ports.SerialPort.GetPortNames();
 
-                //ComboBox_Interfaces.Items.Clear();
-                //foreach (string currentPort in AviliblePorts) ComboBox_Interfaces.Items.Add(currentPort);
-                //var deviceList = DeviceList.Local.GetDevices(DeviceTypes.Hid).ToArray();
-                //var deviceList2 = DeviceList.Local.GetHidDevices(vendorID: 6790, productID: 57352);
+            //    //ComboBox_Interfaces.Items.Clear();
+            //    //foreach (string currentPort in AviliblePorts) ComboBox_Interfaces.Items.Add(currentPort);
+            //    //var deviceList = DeviceList.Local.GetDevices(DeviceTypes.Hid).ToArray();
+            //    //var deviceList2 = DeviceList.Local.GetHidDevices(vendorID: 6790, productID: 57352);
 
-                //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
-                //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
-                //if (MainParam_HIDDevice != null) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
-                /////////////////////foreach (string CurrentInterface in AvilibleInterfaces) ComboBox_Interfaces.Items.Add(CurrentInterface);
-                TextBlock_Status.Text = "Сканирование интерфейсов успешно завершено";
-            }
-            catch
-            {
-                TextBlock_Status.Text = "Ошибка сканирования интерфейсов";
-            }
+            //    //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
+            //    //DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352); //UT71D
+            //    //if (MainParam_HIDDevice != null) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
+            //    foreach (string CurrentInterface in AvilibleInterfaces) ComboBox_Interfaces.Items.Add(CurrentInterface);
+            //    TextBlock_Status.Text = "Сканирование интерфейсов успешно завершено";
+            //}
+            //catch
+            //{
+            //    TextBlock_Status.Text = "Ошибка сканирования интерфейсов";
+            //}
         }
 
         private void ComboBox_Interfaces_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ComboBox_Interfaces.SelectedIndex == -1 || ComboBox_Interfaces.Items.Count == 0 || ComboBox_Interfaces.SelectedItem.ToString() == "Интерфейсы") return;
-            if (!ComboBox_Interfaces.SelectedItem.ToString().Contains("-"))
-            {
-                ComboBox_Interfaces.Items.Clear();
-                ComboBox_Interfaces.Items.Add("Интерфейсы");
-                ComboBox_Interfaces.SelectedIndex = 0;
-                //Button_UserConnectToDevice.IsEnabled = false;
-            }
-            else
-            {
-                ComboBox_Devices.Items.Clear();
-                ComboBox_Devices.Items.Add("Устройства");
-                ComboBox_Devices.SelectedIndex = 0;
-            }
-            //if (ComboBox_Interfaces.SelectedItem.ToString().Contains("COM"))
+            TextBlock_InterfaceMessage.Visibility = ComboBox_Interfaces.SelectedItem == null ? Visibility.Visible : Visibility.Hidden;
+            ////if ((string)((sender as ComboBox).Content) == "1") return;
+            //if (ComboBox_Interfaces.SelectedIndex == -1 || ComboBox_Interfaces.Items.Count == 0 || ComboBox_Interfaces.SelectedItem.ToString() == "Интерфейсы")
             //{
-            //    //ComboBox_Devices.Items.Clear();
+            //    ComboBox_Interfaces.Items.Clear();
+            //    ComboBox_Interfaces.Items.Add("Интерфейсы");
+            //    ComboBox_Interfaces.SelectedIndex = 0;
+            //    return;
+            //}
+            //if (!ComboBox_Interfaces.SelectedItem.ToString().Contains("-"))
+            //{
+            //    ComboBox_Interfaces.Items.Clear();
+            //    ComboBox_Interfaces.Items.Add("Интерфейсы");
+            //    ComboBox_Interfaces.SelectedIndex = 0;
+            //    return;
+            //    //Button_UserConnectToDevice.IsEnabled = false;
+            //}
+            //else
+            //{
+            //    ComboBox_Devices.Items.Clear();
+            //    ComboBox_Devices.Items.Add("Устройства");
+            //    ComboBox_Devices.SelectedIndex = 0;
+            //    return;
+            //}
+            ////if (ComboBox_Interfaces.SelectedItem.ToString().Contains("COM"))
+            ////{
+            ////    //ComboBox_Devices.Items.Clear();
 
-            //    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
-            //    //ComboBox_Devices.SelectedIndex = 0;
-            //}
-            //if (ComboBox_Interfaces.SelectedItem.ToString().Contains("USB to Serial"))
-            //{
-            //    //ComboBox_Devices.Items.Clear();
-            //    //ComboBoxItem CBI = new ComboBoxItem(); 
-            //    ComboBox_Devices.Items.Add(new ComboBoxItem().Content=LabDevice.SupportedDevices.UT71D.ToString());
-            //    //ComboBox_Devices.SelectedIndex = 0;
-            //}
+            ////    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.HP53132A.ToString());
+            ////    //ComboBox_Devices.SelectedIndex = 0;
+            ////}
+            ////if (ComboBox_Interfaces.SelectedItem.ToString().Contains("USB to Serial"))
+            ////{
+            ////    //ComboBox_Devices.Items.Clear();
+            ////    //ComboBoxItem CBI = new ComboBoxItem(); 
+            ////    ComboBox_Devices.Items.Add(new ComboBoxItem().Content=LabDevice.SupportedDevices.UT71D.ToString());
+            ////    //ComboBox_Devices.SelectedIndex = 0;
+            ////}
         }
 
         private void ComboBox_Devices_DropDownOpened(object sender, EventArgs e)
         {
             ComboBox_Devices.Items.Clear();
-            ComboBox_Devices.Items.Add("Доступные устройства:");
-            if (ComboBox_Interfaces.SelectedIndex > 0 && ComboBox_Interfaces.SelectedItem.ToString().Contains('-'))
+            if (ComboBox_Interfaces.SelectedItem != null)
             {
-                if (ComboBox_Interfaces.SelectedItem.ToString().Split('-')[1].Contains("USB HID Device"))
-                {
-                    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT71D.ToString());
-                    ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT61C.ToString());
-                }
+                TextBlock_DeviceMessage.Visibility = Visibility.Visible;
+                string[] AvilibleDevices = DeviceManager_Obj.ScanAvilibleDevicesOnInterface(ComboBox_Interfaces.SelectedItem.ToString()).ToArray();
+                foreach (string CurrentDevice in AvilibleDevices) ComboBox_Devices.Items.Add(CurrentDevice);
+                TextBlock_Status.Text = "Получение доступных устройств успешно завершено";
             }
+
+            
+            //ComboBox_Devices.Items.Clear();
+            //ComboBox_Devices.Items.Add("Доступные устройства:");
+            //if (ComboBox_Interfaces.SelectedIndex > 0 && ComboBox_Interfaces.SelectedItem.ToString().Contains('-'))
+            //{
+            //    if (ComboBox_Interfaces.SelectedItem.ToString().Split('-')[1].Contains("USB HID Device"))
+            //    {
+            //        ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT71D.ToString());
+            //        ComboBox_Devices.Items.Add(LabDevice.SupportedDevices.UT61C.ToString());
+            //    }
+            //}
 
         }
 
         private void ComboBox_Devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            TextBlock_DeviceMessage.Visibility = ComboBox_Devices.SelectedItem == null ? Visibility.Visible : Visibility.Hidden;
             //if (ComboBox_Devices.SelectedIndex == -1) return;
             //if (ComboBox_Devices.SelectedItem.ToString().Contains(LabDevice.SupportedDevices.UT71D.ToString()))
             //{
@@ -691,7 +712,48 @@ namespace LoggerDeviceValues
 
         private void Button_UserConnectToDevice_Click(object sender, RoutedEventArgs e)
         {
-            //DeviceManager.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), ComboBox_Devices.SelectedItem.ToString());
+            if (ComboBox_Interfaces.SelectedItem != null && ComboBox_Devices.SelectedItem != null)
+            {
+                int newIDDev;
+                if ((newIDDev = DeviceManager_Obj.ConnectToDeviceThroughInterface(ComboBox_Interfaces.SelectedItem.ToString(), ComboBox_Devices.SelectedItem.ToString())) > 0)
+                {
+                    TextBlock_Status.Text = "Подключение к устройству " + ComboBox_Interfaces.SelectedItem.ToString() + " успешно";
+                    ComboBox_Devices_DropDownOpened(null, null);
+                    ComboBox_Interfaces_DropDownOpened(null, null);
+                    ListView_CurrentDev.Items.Add(new ListBoxItem()
+                    {
+                        Content = " #"+ newIDDev + " "+ DeviceManager_Obj.Devices[newIDDev].DeviceName.ToString() + " "+ DeviceManager_Obj.Devices[newIDDev].DataType.ToString()+ " ",
+                        Background = new SolidColorBrush(Colors.Transparent),
+                        Tag = newIDDev.ToString(),
+                        //IsChecked = true,
+                    });
+                }
+                else
+                {
+                    TextBlock_Status.Text = "Подключение к устройству " + ComboBox_Interfaces.SelectedItem.ToString() + " не выполнено";
+                }
+                if (DeviceManager_Obj.Devices.Count == 1) Global_SelectedDevice = newIDDev;
+                RadioButton_ChangeAciveDevice_Checked(null, null);
+            }
+
+        }
+
+        private void RadioButton_ChangeAciveDevice_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender == null)
+            {
+                foreach(ListBoxItem CurrentItem in ListView_CurrentDev.Items)
+                {
+                    if (Int32.Parse(CurrentItem.Tag.ToString()) == Global_SelectedDevice) CurrentItem.IsSelected = true;
+                    else CurrentItem.IsSelected = false;
+                }
+            }
+            else
+            {
+                RadioButton RadioButtonSender = sender as RadioButton;
+                //MessageBox.Show(RadioButtonSender.Tag.ToString());
+                Global_SelectedDevice = Int32.Parse(RadioButtonSender.Tag.ToString());
+            }
         }
 
         private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)

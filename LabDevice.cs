@@ -38,30 +38,50 @@ namespace LoggerDeviceValues
         public DataTypes DataType;
         public int CounterMeasure;
         public List<int> MillsBetweenMeasure;
+        public DateTime PastMeasure;
 
         public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
 
         //public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
         public Driver_VirtualDevice Obj_Driver_VirtualDevice;
 
-        public LabDevice()
-        {
+        //public LabDevice()
+        //{
 
-        }
+        //}
 
-        public LabDevice(SupportedDevices _currentDevice, DataTypes _currentDataType)
+        public LabDevice(SupportedDevices _currentDevice, DataTypes _dataType = DataTypes.Abstract)
         {
+            MillsBetweenMeasure = new List<int>();
             DeviceName = _currentDevice;
-            DataType = _currentDataType;
+            DataType = _dataType;
             //if (_currentDevice == SupportedDevices.UT71D) Devices_UT71D.Add(new Driver_UT71D(NewValue)); //binding method for compute and storage new value
             if (_currentDevice == SupportedDevices.Virtual) { Obj_Driver_VirtualDevice = new Driver_VirtualDevice(NewValue); Obj_Driver_VirtualDevice.Connect(); }
+        }
+
+        public LabDevice(LabDevice oldLabDev, DataTypes _dataType)
+        {
+            DeviceName = oldLabDev.DeviceName;
+            DataType = _dataType;
+            if (oldLabDev.DeviceName == SupportedDevices.Virtual)
+            {
+                Obj_Driver_VirtualDevice = new Driver_VirtualDevice(oldLabDev.Obj_Driver_VirtualDevice);
+            }
+            MeasureStruct temp;
+            while (oldLabDev.QueueNewValues.TryDequeue(out temp));
         }
 
         public delegate void NewValueDelegate(decimal value, DataTypes type);
         public void NewValue(decimal value, DataTypes type) //exec from thread in driver
         {
-            Debug.WriteLine(value);
+            //Debug.WriteLine(value);
+            //if (type != DataType) DeviceManager
             QueueNewValues.Enqueue(new MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
+
+            MillsBetweenMeasure.Add((int)DateTime.Now.Subtract(PastMeasure).TotalMilliseconds);
+            PastMeasure = DateTime.Now;
+            if (MillsBetweenMeasure.Count > 10) MillsBetweenMeasure.RemoveAt(0);
+
             //записать себе, чтобы потом с другого потока кто то мог взять эти данные, + отправить текущие данные в хост приложение
             //AddValueToFile(value, LabDevice.DataTypes.Abstract, "");
             //graph

@@ -48,12 +48,12 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Name="ComboBox_Interfaces" Margin="5,5,5,5" VerticalAlignment="Top" DropDownOpened="ComboBox_Interfaces_DropDownOpened" SelectionChanged="ComboBox_Interfaces_SelectionChanged" SelectedIndex="0">
-                                    <ComboBoxItem Content="Интерфейсы"/>
-                                </ComboBox>
-                                <ComboBox Grid.Column="1" Name="ComboBox_Devices" Margin="5,5,5,5" VerticalAlignment="Top" DropDownOpened="ComboBox_Devices_DropDownOpened" SelectionChanged="ComboBox_Devices_SelectionChanged" SelectedIndex="0" Background="{x:Null}">
-                                    <ComboBoxItem Content="Устройства"/>
-                                </ComboBox>
+                                <ComboBox Grid.Column="0" Name="ComboBox_Interfaces" Margin="5,5,5,5" VerticalAlignment="Top" 
+                                          DropDownOpened="ComboBox_Interfaces_DropDownOpened" SelectionChanged="ComboBox_Interfaces_SelectionChanged" />
+                                <TextBlock IsHitTestVisible="False" Margin="10,5,5,5" VerticalAlignment="Center" Name="TextBlock_InterfaceMessage" Foreground="Gray" Text="Интерфейсы"></TextBlock>
+                                <ComboBox Grid.Column="1" Name="ComboBox_Devices" Margin="5,5,5,5" VerticalAlignment="Top" DropDownOpened="ComboBox_Devices_DropDownOpened" 
+                                          SelectionChanged="ComboBox_Devices_SelectionChanged" Background="{x:Null}"/>
+                                <TextBlock Grid.Column="1" IsHitTestVisible="False" Margin="10,5,5,5" VerticalAlignment="Center" Name="TextBlock_DeviceMessage" Foreground="Gray" Text="Устройства"/>
                                 <Button Grid.Row="1" Name="Button_UserConnectToDevice" Grid.ColumnSpan="2" Margin="5,5,5,5" Content="Подключить устройство" Click="Button_UserConnectToDevice_Click"/>
                                 <Button Grid.Row="2" Grid.ColumnSpan="2" Margin="5,5,5,5" Content="Открыть файл"/>
                             </Grid>
@@ -142,14 +142,9 @@
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel>
-                                        <RadioButton Name="Button_LogEvent" Style="{StaticResource {x:Type ToggleButton}}" GroupName="Devices" Content="{Binding Path=Content}" Background="{Binding Path=Background}" IsChecked="{Binding Path=IsChecked}">
-                                            <!--<StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding Path=Content}"/>
-                                                <Canvas>
-                                                    <Path Data="{Binding Source={StaticResource Work}}"/>
-                                                </Canvas>
-                                            </StackPanel>
-                                            --><!--<Image Source="Start.ico"/>-->
+                                        <RadioButton Name="RadioButton_ChangeAciveDevice"  GroupName="Devices" 
+                                                     Content="{Binding Path=Content}" Background="{Binding Path=Background}" 
+                                                     IsChecked="{Binding Path=IsSelected}" Tag="{Binding Path=Tag}" Checked="RadioButton_ChangeAciveDevice_Checked">
                                         </RadioButton>
                                     </StackPanel>
                                 </DataTemplate>

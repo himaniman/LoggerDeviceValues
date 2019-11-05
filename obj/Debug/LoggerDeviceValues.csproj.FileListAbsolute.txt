@@ -10,7 +10,6 @@ Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\MainWindow.baml
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.g.resources
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.Properties.Resources.resources
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.GenerateResource.cache
-Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CoreCompileInputs.cache
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.exe
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.pdb
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\HidSharp.dll
