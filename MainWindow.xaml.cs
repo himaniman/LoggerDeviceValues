@@ -575,11 +575,11 @@ namespace LoggerDeviceValues
             //DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
         }
 
-        public delegate void EventNewValueDelegate(LabDevice.MeasureStruct value, LabDevice device);
+        public delegate void EventNewValueDelegate(decimal Val, LabDevice.DataTypes Typ, DateTime TS, int IDSession);
 
-        public void EventNewValue(LabDevice.MeasureStruct measure, LabDevice device)
+        public void EventNewValue(decimal Val, LabDevice.DataTypes Typ, DateTime TS, int IDSession)
         {
-            System_AddValueToGraph(measure.Val, measure.Typ, measure.TS);
+            System_AddValueToGraph(Val, Typ, TS);
             this.Dispatcher.Invoke(() => UpdateLifeValuesForCurrentDevice());
         }
 

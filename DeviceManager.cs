@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,19 +11,78 @@ namespace LoggerDeviceValues
 {
     public class DeviceManager
     {
+        //public struct MeasureStruct
+        //{
+        //    public decimal Val;
+        //    public LabDevice.DataTypes Typ;
+        //    public DateTime TS;
+        //}
+
         public Dictionary<int, LabDevice> Devices = new Dictionary<int, LabDevice>();
         //public List<Thread> ReadThreads;
         HidDevice[] HidDeviceList;
         //static public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
         //public List<Driver_UT61C> Devices_UT61C = new List<Driver_UT61C>();
-        MainWindow.EventNewValueDelegate DelegateForNewValue;
+        MainWindow.EventNewValueDelegate MainWindowEventNewValue;
         public Thread ThreadAwaitData_Discriptor;
+
+        int DriversIDMax = 0;
+        public List<Driver_VirtualDevice> Drivers_VirtualDevice;
+
+        //public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
+
+        public delegate void NewValueDelegate(decimal value, LabDevice.DataTypes type, int _DriverId);
 
         public DeviceManager(MainWindow.EventNewValueDelegate _delegate)
         {
-            DelegateForNewValue = _delegate;
+            MainWindowEventNewValue = _delegate;
             ThreadAwaitData_Discriptor = new Thread(AwaitData);
             ThreadAwaitData_Discriptor.Start();
+        }
+
+        public void NewValue(decimal value, LabDevice.DataTypes type, int _DriverId)
+        {
+            //Debug.WriteLine(value);
+            //if (type != DataType) DeviceManager
+            ///QueueNewValues.Enqueue(new LabDevice.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
+
+
+            MainWindowEventNewValue(value, type, DateTime.Now, );
+
+
+            //записать себе, чтобы потом с другого потока кто то мог взять эти данные, + отправить текущие данные в хост приложение
+            //AddValueToFile(value, LabDevice.DataTypes.Abstract, "");
+            //graph
+            //file
+            //MainWindow.System_AddValueToGraph(value, DataTypes.Abstract);
+        }
+
+        public void AwaitData()
+        {
+            while (true)
+            {
+                try
+                {
+                    for (int i = 0; i < Devices.Count; i++)
+                    {
+                        if (!Devices.ElementAt(i).Value.QueueNewValues.IsEmpty)
+                        {
+                            LabDevice.MeasureStruct measure;
+                            Devices.ElementAt(i).Value.QueueNewValues.TryDequeue(out measure);
+                            if (measure.Typ != Devices.ElementAt(i).Value.DataType)
+                            {
+                                Devices.Add(Devices.Keys.Max() + 1, new LabDevice(Devices.ElementAt(i).Value, measure.Typ));
+                                break;
+                            }
+                            else DelegateForNewValue(measure, Devices.ElementAt(i).Value);
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
         }
 
         public List<string> ScanAvilibleInterfaces()
@@ -60,6 +120,8 @@ namespace LoggerDeviceValues
             if (_Interface.Contains("Virtual"))
             {
                 Devices.Add(NewIDDevice, new LabDevice(LabDevice.SupportedDevices.Virtual));
+                Drivers_VirtualDevice.Add(new Driver_VirtualDevice(NewValue, DriversIDMax++));
+                Drivers_VirtualDevice.Last().Connect();
             }
             if (_Interface.Contains("USB HID Device"))
             {
@@ -83,32 +145,5 @@ namespace LoggerDeviceValues
             return NewIDDevice;
         }
 
-        public void AwaitData()//external driving func
-        {
-            while (true)
-            {
-                try
-                {
-                    for (int i = 0; i < Devices.Count; i++)
-                    {
-                        if (!Devices.ElementAt(i).Value.QueueNewValues.IsEmpty)
-                        {
-                            LabDevice.MeasureStruct measure;
-                            Devices.ElementAt(i).Value.QueueNewValues.TryDequeue(out measure);
-                            if (measure.Typ != Devices.ElementAt(i).Value.DataType)
-                            {
-                                Devices.Add(Devices.Keys.Max() + 1, new LabDevice(Devices.ElementAt(i).Value, measure.Typ));
-                                break;
-                            }
-                            else DelegateForNewValue(measure, Devices.ElementAt(i).Value);
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-        }
     }
 }

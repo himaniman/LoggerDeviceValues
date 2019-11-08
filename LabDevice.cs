@@ -26,24 +26,18 @@ namespace LoggerDeviceValues
             Freq, Voltage, Resistance, Capacity, Temperature, Current, Abstract
         }
 
-        public struct MeasureStruct
-        {
-            public decimal Val;
-            public DataTypes Typ;
-            public DateTime TS;
-        }
-
         StreamWriter StreamWriter;
         public SupportedDevices DeviceName;
         public DataTypes DataType;
         public int CounterMeasure;
         public List<int> MillsBetweenMeasure;
         public DateTime PastMeasure;
+        public int IDTargetDriver;
 
-        public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
+        
 
         //public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
-        public Driver_VirtualDevice Obj_Driver_VirtualDevice;
+        //public Driver_VirtualDevice Obj_Driver_VirtualDevice;
 
         //public LabDevice()
         //{
@@ -55,28 +49,30 @@ namespace LoggerDeviceValues
             MillsBetweenMeasure = new List<int>();
             DeviceName = _currentDevice;
             DataType = _dataType;
+            IDTargetDriver = -1;
             //if (_currentDevice == SupportedDevices.UT71D) Devices_UT71D.Add(new Driver_UT71D(NewValue)); //binding method for compute and storage new value
-            if (_currentDevice == SupportedDevices.Virtual) { Obj_Driver_VirtualDevice = new Driver_VirtualDevice(NewValue); Obj_Driver_VirtualDevice.Connect(); }
+            //if (_currentDevice == SupportedDevices.Virtual) { Obj_Driver_VirtualDevice = new Driver_VirtualDevice(NewValue); Obj_Driver_VirtualDevice.Connect(); }
         }
 
-        public LabDevice(LabDevice oldLabDev, DataTypes _dataType)
-        {
-            DeviceName = oldLabDev.DeviceName;
-            DataType = _dataType;
-            if (oldLabDev.DeviceName == SupportedDevices.Virtual)
-            {
-                Obj_Driver_VirtualDevice = new Driver_VirtualDevice(oldLabDev.Obj_Driver_VirtualDevice);
-            }
-            MeasureStruct temp;
-            while (oldLabDev.QueueNewValues.TryDequeue(out temp));
-        }
+        //public LabDevice(LabDevice oldLabDev, DataTypes _dataType)
+        //{
+        //    DeviceName = oldLabDev.DeviceName;
+        //    DataType = _dataType;
+        //    if (oldLabDev.DeviceName == SupportedDevices.Virtual)
+        //    {
+        //        //Obj_Driver_VirtualDevice = new Driver_VirtualDevice(oldLabDev.Obj_Driver_VirtualDevice);
+        //        Obj_Driver_VirtualDevice = oldLabDev.Obj_Driver_VirtualDevice;
+        //    }
+        //    //MeasureStruct temp;
+        //    //while (oldLabDev.QueueNewValues.TryDequeue(out temp));
+        //}
 
-        public delegate void NewValueDelegate(decimal value, DataTypes type);
+        //public delegate void NewValueDelegate(decimal value, DataTypes type);
         public void NewValue(decimal value, DataTypes type) //exec from thread in driver
         {
             //Debug.WriteLine(value);
             //if (type != DataType) DeviceManager
-            QueueNewValues.Enqueue(new MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
+            //QueueNewValues.Enqueue(new MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
 
             MillsBetweenMeasure.Add((int)DateTime.Now.Subtract(PastMeasure).TotalMilliseconds);
             PastMeasure = DateTime.Now;

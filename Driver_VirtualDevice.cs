@@ -10,18 +10,20 @@ namespace LoggerDeviceValues
     public class Driver_VirtualDevice
     {
         public Thread ThreadRead_Discriptor;
-        LabDevice.NewValueDelegate DelegateForNewValue;
-        public Driver_VirtualDevice(LabDevice.NewValueDelegate _valueDelegate)
+        DeviceManager.NewValueDelegate DelegateForNewValue;
+        public int DriverID;
+        public Driver_VirtualDevice(DeviceManager.NewValueDelegate _valueDelegate, int _id)
         {
             DelegateForNewValue = _valueDelegate;
+            DriverID = _id;
         }
-        public Driver_VirtualDevice(Driver_VirtualDevice oldDriver)
-        {
-            DelegateForNewValue = oldDriver.DelegateForNewValue;
-            oldDriver.DelegateForNewValue = null;
-            ThreadRead_Discriptor = oldDriver.ThreadRead_Discriptor;
-            oldDriver.Disconnect();
-        }
+        //public Driver_VirtualDevice(Driver_VirtualDevice oldDriver)
+        //{
+        //    DelegateForNewValue = oldDriver.DelegateForNewValue;
+        //    oldDriver.DelegateForNewValue = null;
+        //    ThreadRead_Discriptor = oldDriver.ThreadRead_Discriptor;
+        //    oldDriver.Disconnect();
+        //}
         public bool Connect()
         {
             ThreadRead_Discriptor = new Thread(ReadDataVirtual);
@@ -44,7 +46,7 @@ namespace LoggerDeviceValues
                 value = (decimal)rnd.Next(10, 50)/10;
                 type = LabDevice.DataTypes.Voltage;
                 //this.Dispatcher.Invoke(() => DelegateForNewValue(value));
-                DelegateForNewValue?.Invoke(value, type);
+                DelegateForNewValue?.Invoke(value, type, DriverID);
                 //System_serialDataQueue.Enqueue(buffer);
                 //защищенный вызов лаб девайса
             }
