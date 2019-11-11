@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -11,12 +12,14 @@ namespace LoggerDeviceValues
 {
     public class DeviceManager
     {
-        //public struct MeasureStruct
-        //{
-        //    public decimal Val;
-        //    public LabDevice.DataTypes Typ;
-        //    public DateTime TS;
-        //}
+        public struct MeasureStruct
+        {
+            public decimal Val;
+            public LabDevice.DataTypes Typ;
+            public DateTime TS;
+            public int DrvID;
+            public string RAW;
+        }
 
         public Dictionary<int, LabDevice> Devices = new Dictionary<int, LabDevice>();
         //public List<Thread> ReadThreads;
@@ -27,11 +30,11 @@ namespace LoggerDeviceValues
         public Thread ThreadAwaitData_Discriptor;
 
         int DriversIDMax = 0;
-        public List<Driver_VirtualDevice> Drivers_VirtualDevice;
+        public List<Driver_VirtualDevice> Drivers_VirtualDevice = new List<Driver_VirtualDevice>();
 
-        //public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
+        public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
 
-        public delegate void NewValueDelegate(decimal value, LabDevice.DataTypes type, int _DriverId);
+        //public delegate void NewValueDelegate(decimal value, LabDevice.DataTypes type, int _DriverId);
 
         public DeviceManager(MainWindow.EventNewValueDelegate _delegate)
         {
@@ -45,9 +48,10 @@ namespace LoggerDeviceValues
             //Debug.WriteLine(value);
             //if (type != DataType) DeviceManager
             ///QueueNewValues.Enqueue(new LabDevice.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
-
-
-            MainWindowEventNewValue(value, type, DateTime.Now, );
+            //int CurrentIDSession = -1;
+            //foreach (KeyValuePair<int, LabDevice> currentDev in Devices) CurrentIDSession = (currentDev.Value.IDTargetDriver == _DriverId) ? currentDev.Key : CurrentIDSession;
+            //Devices[CurrentIDSession].NewValue(value, type);
+            //MainWindowEventNewValue(value, type, DateTime.Now, CurrentIDSession);
 
 
             //записать себе, чтобы потом с другого потока кто то мог взять эти данные, + отправить текущие данные в хост приложение
@@ -61,28 +65,114 @@ namespace LoggerDeviceValues
         {
             while (true)
             {
-                try
+                MeasureStruct measure;
+                if (QueueNewValues.TryDequeue(out measure))
                 {
-                    for (int i = 0; i < Devices.Count; i++)
+                    int CurrentIDSession = -1;
+                    foreach (KeyValuePair<int, LabDevice> currentDev in Devices) CurrentIDSession = (currentDev.Value.IDTargetDriver == measure.DrvID) ? currentDev.Key : CurrentIDSession;
+
+                    if (CurrentIDSession > -1)
                     {
-                        if (!Devices.ElementAt(i).Value.QueueNewValues.IsEmpty)
+                        if (Devices[CurrentIDSession].DataType != measure.Typ)
                         {
-                            LabDevice.MeasureStruct measure;
-                            Devices.ElementAt(i).Value.QueueNewValues.TryDequeue(out measure);
-                            if (measure.Typ != Devices.ElementAt(i).Value.DataType)
+                            if (Devices[CurrentIDSession].CounterMeasure == 0)
                             {
-                                Devices.Add(Devices.Keys.Max() + 1, new LabDevice(Devices.ElementAt(i).Value, measure.Typ));
-                                break;
+                                Devices[CurrentIDSession].DataType = measure.Typ;
+                                Devices[CurrentIDSession].NewValue(measure);
+                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
                             }
-                            else DelegateForNewValue(measure, Devices.ElementAt(i).Value);
+                            else if (Devices[CurrentIDSession].CounterMeasure > 0 && Devices[CurrentIDSession].CounterMeasure < 10)
+                            {
+                                int NewIDSession = 1;
+                                if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
+
+                                Devices.Add(NewIDSession, new LabDevice(Devices[CurrentIDSession].DeviceName, measure.Typ, Devices[CurrentIDSession].IDTargetDriver));
+                                Devices.Remove(CurrentIDSession);
+
+                                Devices[NewIDSession].NewValue(measure);
+                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, NewIDSession);
+                            }
+                            else if (Devices[CurrentIDSession].CounterMeasure >= 10)
+                            {
+                                int NewIDSession = 1;
+                                if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
+
+                                Devices.Add(NewIDSession, new LabDevice(Devices[CurrentIDSession].DeviceName, measure.Typ, Devices[CurrentIDSession].IDTargetDriver));
+                                Devices[CurrentIDSession].IDTargetDriver = -1;
+
+                                Devices[NewIDSession].NewValue(measure);
+                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, NewIDSession);
+                            }
+                        }
+                        else
+                        {
+                            Devices[CurrentIDSession].NewValue(measure);
+                            MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
                         }
                     }
                 }
-                catch
+                foreach (int i in Devices.Keys.ToArray())
                 {
+                    if (Devices[i].active)
+                    {
+                        //случай если была пауза продилась как 3 раза * стандартное значение задержки между данными
+                        //то значит надо создать новый лаб девайс чтобы новые данные если прийдут то лягут туды
+                        if (Devices[i].CounterMeasure > 10)
+                        {
+                            if (Devices[i].PastMeasure + TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) < DateTime.Now)
+                            {
+                                int NewIDSession = 1;
+                                if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
 
+                                Devices.Add(NewIDSession, new LabDevice(Devices[i].DeviceName, LabDevice.DataTypes.Abstract, Devices[i].IDTargetDriver));
+                                Devices[i].IDTargetDriver = -1;
+                                Devices[i].active = false;
+
+                                MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
+
+                                break;
+                                //else
+                                //{
+                                //    //данные пришли меньше 10 штук, потом тишина. тип данных не менялись, просто вытащили штекер. те несколько значений будут висеть на экране?
+                                //    int NewIDSession = 1;
+                                //    if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
+
+                                //    Devices.Add(NewIDSession, new LabDevice(Devices[i].DeviceName, LabDevice.DataTypes.Abstract, Devices[i].IDTargetDriver));
+                                //    Devices.Remove(i);
+
+                                //    //MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
+                                //    break;
+                                //}
+                            }
+                        }
+                    }
                 }
+                    //for (int i = 0; i < Devices.Count; i++)
+                    //{
+                    //    if (!Devices.ElementAt(i).Value.QueueNewValues.IsEmpty)
+                    //    {
+                    //        LabDevice.MeasureStruct measure;
+                    //        Devices.ElementAt(i).Value.QueueNewValues.TryDequeue(out measure);
+                    //        if (measure.Typ != Devices.ElementAt(i).Value.DataType)
+                    //        {
+                    //            Devices.Add(Devices.Keys.Max() + 1, new LabDevice(Devices.ElementAt(i).Value, measure.Typ));
+                    //            break;
+                    //        }
+                    //        else DelegateForNewValue(measure, Devices.ElementAt(i).Value);
+                    //    }
+                    //}
+                //}
+                //catch (Exception ex)
+                //{
+                //    Debug.WriteLine(ex.ToString());
+                //}
             }
+        }
+
+        public void RemoveNotActiveDevice(int IDSession)
+        {
+            Devices.Remove(IDSession);
+            MainWindowEventNewValue(0, 0, DateTime.MinValue, -1);
         }
 
         public List<string> ScanAvilibleInterfaces()
@@ -115,13 +205,14 @@ namespace LoggerDeviceValues
 
         public int ConnectToDeviceThroughInterface(string _Interface, string _Device)
         {
-            int NewIDDevice = 1;
-            if (Devices.Count > 0) NewIDDevice = Devices.Keys.Max() + 1;
+            int NewIDSession = 1;
+            if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
             if (_Interface.Contains("Virtual"))
             {
-                Devices.Add(NewIDDevice, new LabDevice(LabDevice.SupportedDevices.Virtual));
-                Drivers_VirtualDevice.Add(new Driver_VirtualDevice(NewValue, DriversIDMax++));
+                Devices.Add(NewIDSession, new LabDevice(LabDevice.SupportedDevices.Virtual));
+                Drivers_VirtualDevice.Add(new Driver_VirtualDevice(QueueNewValues, DriversIDMax++));
                 Drivers_VirtualDevice.Last().Connect();
+                Devices[NewIDSession].IDTargetDriver = Drivers_VirtualDevice.Last().DriverID;
             }
             if (_Interface.Contains("USB HID Device"))
             {
@@ -142,7 +233,7 @@ namespace LoggerDeviceValues
 
             }
                 
-            return NewIDDevice;
+            return NewIDSession;
         }
 
     }

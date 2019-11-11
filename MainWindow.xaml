@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
-        Title="Logger Device Values v0.3 filename" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
+        Title="Logger Device Values v0.3 filename" Height="660" Width="900" Background="White" Closing="Window_Shutdown">
     <Window.Resources>
         <Canvas x:Key="Work" Width="28" Height="15">
             <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
@@ -31,11 +31,11 @@
         </StatusBar>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="4*" MaxWidth="420" MinWidth="280"/>
                 <ColumnDefinition Width="6*"/>
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MinWidth="280">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <GroupBox Header="Подключение" Margin="5,5,5,5">
                             <Grid>
@@ -69,8 +69,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_BurnTXT" Content="Тип файла TXT" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби"/>
-                                <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_BurnCSV" Content="Тип файла CSV" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби"/>
+                                
                                 <TextBox Grid.Row="1" Grid.ColumnSpan="2" Name="TextBox_FileName" Text="FileName" Margin="5,5,5,5" ToolTip="По умолчанию файл будет сохранен на рабочий стол"/>
                                 <RadioButton Grid.Row="2" Grid.Column="0" Name="RadioButton_AutoGenName" Content="Автогенерация имени" Margin="5,5,5,5" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True"/>
                                 <!--<Button Grid.Row="2" Grid.Column="0" Name="Button_GenerateNewNameFile" Content="Новое имя" Margin="5,5,5,5"/>-->
@@ -92,25 +91,27 @@
                                 </Grid.ColumnDefinitions>
                                 <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_QtyMeas" GroupName="TimerOrQty" Style="{StaticResource {x:Type ToggleButton}}" Margin="5,5,5,5" Content="Кол-во измерений" Checked="RadioButton_QtyMeas_Checked"/>
                                 <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_Timer" GroupName="TimerOrQty" Style="{StaticResource {x:Type ToggleButton}}" Margin="5,5,5,5" Content="Таймер" IsChecked="True" Checked="RadioButton_Timer_Checked"/>
-                                <xctk:IntegerUpDown Grid.Row="1" Grid.Column="0" Name="IntegerUpDown_QtyMeas" Value="100" Margin="5,5,5,5" Minimum="2"/>
+                                <xctk:IntegerUpDown Grid.Row="1" Grid.Column="0" Name="IntegerUpDown_QtyMeas" Value="100" Margin="5,5,5,5" Minimum="2" IsEnabled="False"/>
                                 <!--<TextBox Grid.Row="1" Grid.Column="0" Name="TextBox_QtyMeas" Text="100" Margin="5,5,5,5" TextAlignment="Left" MaxLength="10" PreviewTextInput="TextBox_QtyMeas_PreviewTextInput" IsEnabled="False"/>-->
                                 <!--<xctk:DateTimePicker Grid.Row="7" Grid.Column="0" Name="DateTimePicker_deadline" Margin="10,10,5,10" AllowTextInput="False" Format="Custom" TimeFormat="LongTime" FormatString="dd/MM HH:mm" IsEnabled="False"/>-->
                                 <xctk:TimeSpanUpDown Grid.Row="1" Grid.Column="1" Name="TimeSpanUpDown_Timer" Margin="5,5,5,5" Value="1:0:0" Minimum="0:1:0"/>
                                 <Button Grid.Row="2" Grid.ColumnSpan="2" Name="Button_FileBurnStart" Content="Начать запись" Margin="5,5,5,5" Click="Button_FileBurnStart_Click" Background="#FFDDDDDD"/>
                                 <ProgressBar Grid.Row="3" Grid.ColumnSpan="2" Margin="5,5,5,5" Minimum="0" Maximum="100" Value="0" Name="ProgressBar_Status"/>
                                 <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Name="TextBlock_ETA" Margin="5,10,5,10" Text="Время/Измерения до окончания" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                <Button Grid.Row="4" Grid.ColumnSpan="2" Name="Button_SaveCurrentData" Content="Сохранить все накопленные значения в файл" Margin="5,5,5,5" Click="Button_SaveCurrentData_Click"/>
+                                <Button Grid.Row="4" Grid.ColumnSpan="2" Name="Button_SaveCurrentData" Content="Сохранить текущую сессию в файл" Margin="5,5,5,5" Click="Button_SaveCurrentData_Click"/>
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Сообщения" Margin="5,5,5,5">
-                            <ListView Name="ListBox_Log" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Margin="5,5,5,5" Height="auto" MinHeight="80">
+                            <ListView Name="ListBox_Log" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Margin="5,5,5,5" Height="auto" MinHeight="80" MaxHeight="120">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <DockPanel>
-                                            <Button Name="Button_LogEvent" DockPanel.Dock="Right" Width="16" Click="Button_LogEvent_Click">
-                                                <Image Source="Start.ico"/>
+                                            <Button Name="Button_LogEvent" DockPanel.Dock="Right" Width="20" Click="Button_LogEvent_Click">
+                                                <Canvas Width="16" Height="12">
+                                                    <Path Width="12" Height="12" Canvas.Left="2" Canvas.Top="0" Stretch="Fill" Fill="#FF00AA00" Data="F1 M 39.8307,37.6042L 36.6641,34.4375L 25.1849,23.3542L 35.4766,23.3542L 50.5182,37.6042L 35.4766,51.8542L 25.1849,51.8542L 36.6641,40.7708L 39.8307,37.6042 Z "/>
+                                                </Canvas>
                                             </Button>
-                                            <TextBlock DockPanel.Dock="Left" Text="{Binding Path=Content}" TextWrapping="WrapWithOverflow"/>
+                                            <TextBlock DockPanel.Dock="Left" Text="{Binding Path=Content}" Background="{Binding Path=Background}" TextWrapping="WrapWithOverflow"/>
                                         </DockPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -173,13 +174,13 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Пауза   "/>
                                     <Canvas x:Name="appbar_pause" Width="16" Height="16">
-                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#AAFFF000" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z " RenderTransformOrigin="0.5,0.5"/>
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#AAFFF000" Data="F1 M 26.9167,23.75L 33.25,23.75L 33.25,52.25L 26.9167,52.25L 26.9167,23.75 Z M 42.75,23.75L 49.0833,23.75L 49.0833,52.25L 42.75,52.25L 42.75,23.75 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
-                            <RadioButton Grid.Column="2" Name="RadioButton_StopMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False">
+                            <RadioButton Grid.Column="2" Name="RadioButton_DisableDriver" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Удалить устройство   "/>
+                                    <TextBlock Text="Отлючить устройство   "/>
                                     <Canvas x:Name="appbar_close" Width="16" Height="16">
                                         <Path Width="16" Height="16" Stretch="Fill" Fill="#FFFF0000" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
@@ -218,7 +219,7 @@
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                         </lvc:CartesianChart>-->
-                        <TextBlock Grid.Row="2" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Visible"/>
+                        <TextBlock Grid.Row="2" Name="TextBlock_DataNotComing" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Visible"/>
                         <Grid Grid.Row="3">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="30"/>
@@ -309,7 +310,7 @@
                                     <Slider DockPanel.Dock="Left" Name="Slider_FragmentSize" Margin="5,0,5,0" Minimum="10" Maximum="400" Value="50" IsSnapToTickEnabled="True" Ticks="10,50,100,200,400" AutoToolTipPlacement="TopLeft" LargeChange="100" TickPlacement="BottomRight"/>
                                 </DockPanel>
                             </GroupBox>
-                            <GroupBox Header="Формат отображения значения на графике" Margin="5,0,5,0">
+                            <GroupBox Header="Формат отображения текущих значений" Margin="5,0,5,0">
                                 <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <RadioButton Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
                                     <RadioButton Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
@@ -321,11 +322,18 @@
                                     <Slider DockPanel.Dock="Left" Name="Slider_MeanPointFreq" Margin="5,0,5,0" Value="10" Minimum="1" Maximum="400" IsSnapToTickEnabled="True" Ticks="1,10,50,200,400" TickPlacement="BottomRight" AutoToolTipPlacement="TopLeft"/>
                                 </DockPanel>
                             </GroupBox>
-                            <GroupBox Grid.Row="5" Margin="5,5,5,5" Header="Директория для автоматического сохранения">
-                                <DockPanel>
-                                    <Button DockPanel.Dock="Right" Margin="10,5,10,5" Width="150" Content="Указать путь"/>
-                                    <TextBox Margin="10,5,10,5" Text="path"/>
-                                </DockPanel>
+                            <GroupBox Grid.Row="5" Margin="5,5,5,5" Header="Настройки сохранения в файл">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Margin="10,5,10,5" Width="150" Content="Указать путь"/>
+                                        <TextBox Margin="10,5,10,5" Text="path"/>
+                                    </DockPanel>
+                                    <TextBlock Margin="10,0,10,5" DockPanel.Dock="Bottom" Text="В данную папку будут сохранены файлы при нажатии кнопки 'Начать запись'. Файлы будут названы автоматически." TextWrapping="Wrap"/>
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_BurnTXT" Content="Формат файла TXT" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби"/>
+                                        <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_BurnCSV" Content="Формат файла CSV" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби"/>
+                                    </WrapPanel>
+                                </StackPanel>
                             </GroupBox>
                         </StackPanel>
                     </ScrollViewer>

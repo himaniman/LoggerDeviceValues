@@ -35,13 +35,13 @@ namespace LoggerDeviceValues
         public Thread ThreadRead_Discriptor;
         public HidDevice HIDDevice_Discriptor;
         public HidStream HIDStream_Discriptor;
-        LabDevice.NewValueDelegate DelegateForNewValue;
+        //LabDevice.NewValueDelegate DelegateForNewValue;
 
-        public Driver_UT71D(LabDevice.NewValueDelegate _valueDelegate)
-        {
-            LocalBuffer = new byte[1];
-            DelegateForNewValue = _valueDelegate;
-        }
+        //public Driver_UT71D(LabDevice.NewValueDelegate _valueDelegate)
+        //{
+        //    LocalBuffer = new byte[1];
+        //    //DelegateForNewValue = _valueDelegate;
+        //}
 
         public bool Connect(HidDevice _HidDevice)
         {

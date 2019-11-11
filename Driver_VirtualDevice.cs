@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,11 +11,13 @@ namespace LoggerDeviceValues
     public class Driver_VirtualDevice
     {
         public Thread ThreadRead_Discriptor;
-        DeviceManager.NewValueDelegate DelegateForNewValue;
+        //DeviceManager.NewValueDelegate DelegateForNewValue;
+        ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
         public int DriverID;
-        public Driver_VirtualDevice(DeviceManager.NewValueDelegate _valueDelegate, int _id)
+        public Driver_VirtualDevice(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
         {
-            DelegateForNewValue = _valueDelegate;
+            QueueNewValues = _QueueNewValuesGlobal;
+            //DelegateForNewValue = _valueDelegate;
             DriverID = _id;
         }
         //public Driver_VirtualDevice(Driver_VirtualDevice oldDriver)
@@ -39,16 +42,34 @@ namespace LoggerDeviceValues
         {
             Random rnd = new Random();
             decimal value;
-            LabDevice.DataTypes type;
+            LabDevice.DataTypes type = LabDevice.DataTypes.Abstract;
+            int mul = rnd.Next(-4, 4);
+            int ofs = rnd.Next(1, 1000);
+            int del = rnd.Next(300, 1000);
+            int counterForDisable = 50;
             while (true)
             {
-                Thread.Sleep(300);
-                value = (decimal)rnd.Next(10, 50)/10;
-                type = LabDevice.DataTypes.Voltage;
+                Thread.Sleep(del);
+                counterForDisable--;
+                //if (counterForDisable < 35 && counterForDisable > 28)
+                //{
+                //    //type = LabDevice.DataTypes.Abstract;
+                //    continue;
+                //}
+                ////if (counterForDisable == 0) break;
+
+                value = ((decimal)Math.Sin(((double)DateTime.Now.Ticks + ofs*100000) / (63700* ofs)) * (decimal)Math.Pow(10,mul)) + (decimal)(ofs * Math.Pow(10, mul)); //(decimal)rnd.Next(10, 50)/10;
+                
+                if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
+                if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
+
+                //type = LabDevice.DataTypes.Voltage;
                 //this.Dispatcher.Invoke(() => DelegateForNewValue(value));
-                DelegateForNewValue?.Invoke(value, type, DriverID);
+                //DelegateForNewValue?.Invoke(value, type, DriverID);
+                QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now , DrvID = DriverID});
                 //System_serialDataQueue.Enqueue(buffer);
                 //защищенный вызов лаб девайса
+                
             }
         }
     }

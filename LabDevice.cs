@@ -26,15 +26,19 @@ namespace LoggerDeviceValues
             Freq, Voltage, Resistance, Capacity, Temperature, Current, Abstract
         }
 
-        StreamWriter StreamWriter;
+        public List<DeviceManager.MeasureStruct> MeasuresBase = new List<DeviceManager.MeasureStruct>();
+
         public SupportedDevices DeviceName;
         public DataTypes DataType;
-        public int CounterMeasure;
+        public int CounterMeasure = 0;
         public List<int> MillsBetweenMeasure;
         public DateTime PastMeasure;
         public int IDTargetDriver;
+        public bool active = true;
 
-        
+        public decimal Statistics_Min=0;
+        public decimal Statistics_Max=0;
+
 
         //public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
         //public Driver_VirtualDevice Obj_Driver_VirtualDevice;
@@ -44,12 +48,12 @@ namespace LoggerDeviceValues
 
         //}
 
-        public LabDevice(SupportedDevices _currentDevice, DataTypes _dataType = DataTypes.Abstract)
+        public LabDevice(SupportedDevices _currentDevice, DataTypes _dataType = DataTypes.Abstract, int TargIdDrv = -1)
         {
             MillsBetweenMeasure = new List<int>();
             DeviceName = _currentDevice;
             DataType = _dataType;
-            IDTargetDriver = -1;
+            IDTargetDriver = TargIdDrv;
             //if (_currentDevice == SupportedDevices.UT71D) Devices_UT71D.Add(new Driver_UT71D(NewValue)); //binding method for compute and storage new value
             //if (_currentDevice == SupportedDevices.Virtual) { Obj_Driver_VirtualDevice = new Driver_VirtualDevice(NewValue); Obj_Driver_VirtualDevice.Connect(); }
         }
@@ -68,15 +72,25 @@ namespace LoggerDeviceValues
         //}
 
         //public delegate void NewValueDelegate(decimal value, DataTypes type);
-        public void NewValue(decimal value, DataTypes type) //exec from thread in driver
+        public void NewValue(DeviceManager.MeasureStruct measure) //exec from thread in driver
         {
             //Debug.WriteLine(value);
             //if (type != DataType) DeviceManager
             //QueueNewValues.Enqueue(new MeasureStruct { Val = value, Typ = type, TS = DateTime.Now });
+            MeasuresBase.Add(measure);
 
-            MillsBetweenMeasure.Add((int)DateTime.Now.Subtract(PastMeasure).TotalMilliseconds);
-            PastMeasure = DateTime.Now;
+            if (CounterMeasure==0)
+            {
+                Statistics_Min = measure.Val;
+                Statistics_Max = measure.Val;
+            }
+            CounterMeasure++;
+            if (PastMeasure!=DateTime.MinValue) MillsBetweenMeasure.Add((int)measure.TS.Subtract(PastMeasure).TotalMilliseconds);
+            PastMeasure = measure.TS;
             if (MillsBetweenMeasure.Count > 10) MillsBetweenMeasure.RemoveAt(0);
+
+            if (measure.Val < Statistics_Min) Statistics_Min = measure.Val;
+            if (measure.Val > Statistics_Max) Statistics_Max = measure.Val;
 
             //записать себе, чтобы потом с другого потока кто то мог взять эти данные, + отправить текущие данные в хост приложение
             //AddValueToFile(value, LabDevice.DataTypes.Abstract, "");
@@ -85,48 +99,48 @@ namespace LoggerDeviceValues
             //MainWindow.System_AddValueToGraph(value, DataTypes.Abstract);
         }
 
-        public void AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
-        {
-            if (StreamWriter == null) StreamWriter = File.CreateText(
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" +
-                "Log_Measure_" + DeviceName.ToString() + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt");
+        //public void AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
+        //{
+        //    if (StreamWriter == null) StreamWriter = File.CreateText(
+        //        Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" +
+        //        "Log_Measure_" + DeviceName.ToString() + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt");
 
 
-            string StringForBurnToFile = "";
-            //if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            //else
-            //{
-            //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
-            //    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
-            //}
-            StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
-            StringForBurnToFile += "\t" + DateTime.Now.TimeOfDay.TotalSeconds.ToString();
-            StreamWriter.WriteLine(StringForBurnToFile);
-            StreamWriter.Flush();
-            //try
-            //{
-            //    if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
-            //    {
-            //        MainParam_StreamWriter.Flush();
-            //        if (MainParam_CounterMeasure_End == 0)
-            //        {
-            //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-            //            //TextBlock_StatusBurn.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "\nОкончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-            //        }
-            //        else
-            //        {
-            //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание в ~" + DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - MainParam_CounterMeasure) * MainParam_MillsBetweenMeasure.Average()).ToString("dd/MM/yyyy HH:mm:ss");
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
-            //}
+        //    string StringForBurnToFile = "";
+        //    //if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+        //    //else
+        //    //{
+        //    //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+        //    //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+        //    //    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
+        //    //}
+        //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+        //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+        //    StringForBurnToFile += "\t" + DateTime.Now.TimeOfDay.TotalSeconds.ToString();
+        //    StreamWriter.WriteLine(StringForBurnToFile);
+        //    StreamWriter.Flush();
+        //    //try
+        //    //{
+        //    //    if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
+        //    //    {
+        //    //        MainParam_StreamWriter.Flush();
+        //    //        if (MainParam_CounterMeasure_End == 0)
+        //    //        {
+        //    //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+        //    //            //TextBlock_StatusBurn.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "\nОкончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание в ~" + DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - MainParam_CounterMeasure) * MainParam_MillsBetweenMeasure.Average()).ToString("dd/MM/yyyy HH:mm:ss");
+        //    //        }
+        //    //    }
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
+        //    //}
 
-        }
+        //}
 
         public static String ConvertScientific(decimal value, DataTypes type)
         {
