@@ -45,18 +45,18 @@ namespace LoggerDeviceValues
             LabDevice.DataTypes type = LabDevice.DataTypes.Abstract;
             int mul = rnd.Next(-4, 4);
             int ofs = rnd.Next(1, 1000);
-            int del = rnd.Next(300, 1000);
+            int del = rnd.Next(100, 200);
             int counterForDisable = 50;
             while (true)
             {
                 Thread.Sleep(del);
                 counterForDisable--;
-                //if (counterForDisable < 35 && counterForDisable > 28)
-                //{
-                //    //type = LabDevice.DataTypes.Abstract;
-                //    continue;
-                //}
-                ////if (counterForDisable == 0) break;
+                if (counterForDisable < 25 && counterForDisable > 5)
+                {
+                    type = LabDevice.DataTypes.Abstract;
+                    continue;
+                }
+                //if (counterForDisable == 0) break;
 
                 value = ((decimal)Math.Sin(((double)DateTime.Now.Ticks + ofs*100000) / (63700* ofs)) * (decimal)Math.Pow(10,mul)) + (decimal)(ofs * Math.Pow(10, mul)); //(decimal)rnd.Next(10, 50)/10;
                 

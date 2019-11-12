@@ -35,6 +35,7 @@ namespace LoggerDeviceValues
         public DateTime PastMeasure;
         public int IDTargetDriver;
         public bool active = true;
+        public bool ignore = false;
 
         public decimal Statistics_Min=0;
         public decimal Statistics_Max=0;
@@ -81,6 +82,19 @@ namespace LoggerDeviceValues
 
             if (CounterMeasure==0)
             {
+                //testbench
+                //Random rnd = new Random();
+                //int max = 10000000;
+                //for (int i = 0; i < max; i++)
+                //{
+                //    DeviceManager.MeasureStruct meas = new DeviceManager.MeasureStruct();
+                //    meas.Val = (decimal)rnd.NextDouble();
+                //    meas.TS = DateTime.Now - TimeSpan.FromSeconds(max - i) - TimeSpan.FromSeconds(10);
+                //    meas.Typ = measure.Typ;
+                //    MeasuresBase.Add(meas);
+                //    CounterMeasure++;
+                //}
+
                 Statistics_Min = measure.Val;
                 Statistics_Max = measure.Val;
             }

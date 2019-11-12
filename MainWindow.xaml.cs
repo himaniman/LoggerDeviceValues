@@ -33,6 +33,7 @@ using System.Threading;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Axes;
+using System.ComponentModel;
 
 namespace LoggerDeviceValues
 {
@@ -44,6 +45,16 @@ namespace LoggerDeviceValues
     /// </summary>
     public partial class MainWindow : Window
     {
+        public enum StateMachine
+        {
+            Init,
+            NowNotConnectedDevice,
+            HaveConectedDevice,
+            BurningFileCurrentDevice,
+            Burning,
+        };
+        public StateMachine GlobalState = StateMachine.Init;
+
         public ConcurrentQueue<string> System_serialDataQueue = new ConcurrentQueue<string>();
         public ConcurrentQueue<byte[]> System_HIDDataQueue = new ConcurrentQueue<byte[]>();
 
@@ -284,7 +295,7 @@ namespace LoggerDeviceValues
 
             if ((bool)RadioButton_FixedPoint.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertFixedPoint(value, type);
             if ((bool)RadioButton_Scientific.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertScientific(value, type);
-            TextBlock_CounterMeasure.Text = MainParam_CounterMeasure.ToString();
+            //TextBlock_CounterMeasure.Text = MainParam_CounterMeasure.ToString();
 
             //if (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()))
             //    MainChartValues.RemoveAt(0) = (ChartValues<MeasureModel>)MainChartValues.Skip(MainChartValues.Count - int.Parse(((ComboBoxItem)ComboBox_SizeGraph.SelectedItem).Tag.ToString()));
@@ -293,7 +304,7 @@ namespace LoggerDeviceValues
             MainParam_PastMeasure = DateTime.Now;
             if (MainParam_MillsBetweenMeasure.Count > 10) MainParam_MillsBetweenMeasure.RemoveAt(0);
 
-            if (MainParam_CounterMeasure > 0 && MainParam_MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (MainParam_MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
+            //if (MainParam_CounterMeasure > 0 && MainParam_MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (MainParam_MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
 
             if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
             {
@@ -411,7 +422,7 @@ namespace LoggerDeviceValues
             MainChartModel.Axes.Add(xAxis);
             //MainChartModel.Axes.Add(new LinearAxis());
 
-
+            GlobalState = StateMachine.NowNotConnectedDevice;
             //var s1 = new LineSeries
             //{
             //    StrokeThickness = 1,
@@ -515,6 +526,7 @@ namespace LoggerDeviceValues
             //ThreadAwaitData_Discriptor = new Thread(DeviceManager_Obj.AwaitData);
             //ThreadAwaitData_Discriptor.Start();
             //DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
+            UpdateBlockUI();
         }
 
         public delegate void EventNewValueDelegate(decimal Val, LabDevice.DataTypes Typ, DateTime TS, int IDSession);
@@ -550,25 +562,50 @@ namespace LoggerDeviceValues
             }
 
             bool flagGenNewSession = true;
+            bool flagHaveActiveDev = false;
             foreach (ListBoxItem currentDevSession in ListView_CurrentDev.Items)
             {
                 int currentIDSession = Int32.Parse(currentDevSession.Tag.ToString());
                 if (currentIDSession == IDSession) flagGenNewSession = false;
+                if (DeviceManager_Obj.Devices[currentIDSession].active) flagHaveActiveDev = true;
                 if (currentIDSession == Global_SelectedDevice)
                 {
                     if (IDSession == Global_SelectedDevice)
                     {
                         TextBlock_CurrentValue.Text = LabDevice.ConvertFixedPoint(Val, Typ);
-                        if (DeviceManager_Obj.Devices[IDSession].CounterMeasure > 0 && DeviceManager_Obj.Devices[IDSession].MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (DeviceManager_Obj.Devices[IDSession].MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
-                        TextBlock_CounterMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[IDSession].Statistics_Max, Typ);
+                        //if (DeviceManager_Obj.Devices[IDSession].CounterMeasure > 0 && DeviceManager_Obj.Devices[IDSession].MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (DeviceManager_Obj.Devices[IDSession].MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
+                        //TextBlock_CounterMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[IDSession].Statistics_Max, Typ);
                     }
                     else if (IDSession == -1)
                     {
                         TextBlock_CurrentValue.Text = "N/A";
-                        if (DeviceManager_Obj.Devices[Global_SelectedDevice].CounterMeasure > 0 && DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
-                        TextBlock_CounterMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[Global_SelectedDevice].Statistics_Max, Typ);
+                        //if (DeviceManager_Obj.Devices[Global_SelectedDevice].CounterMeasure > 0 && DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
+                        //TextBlock_CounterMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[Global_SelectedDevice].Statistics_Max, Typ);
                     }
-                    TextBlock_DataNotComing.Visibility = DeviceManager_Obj.Devices[currentIDSession].active ? Visibility.Hidden : Visibility.Visible;
+                    if (DeviceManager_Obj.Devices[currentIDSession].active)
+                    {
+                        RadioButton_StartMeasure.IsEnabled = true;
+                        RadioButton_PauseMeasure.IsEnabled = true;
+                        TextBlock_DataNotComing.Visibility = Visibility.Hidden;
+                    }
+                    else
+                    {
+                        RadioButton_StartMeasure.IsEnabled = false;
+                        RadioButton_PauseMeasure.IsEnabled = false;
+                        TextBlock_DataNotComing.Visibility = Visibility.Visible;
+                    }
+                    if (DeviceManager_Obj.Devices[currentIDSession].IDTargetDriver > -1) Button_DisableDriver.IsEnabled = true;
+                    else Button_DisableDriver.IsEnabled = false;
+                    if (DeviceManager_Obj.Devices[currentIDSession].ignore)
+                    {
+                        RadioButton_StartMeasure.IsChecked = false;
+                        RadioButton_PauseMeasure.IsChecked = true;
+                    }
+                    else
+                    {
+                        RadioButton_StartMeasure.IsChecked = true;
+                        RadioButton_PauseMeasure.IsChecked = false;
+                    }
                 }
                 currentDevSession.Content = " #" + currentIDSession + " " + DeviceManager_Obj.Devices[currentIDSession].DeviceName.ToString() + " " + DeviceManager_Obj.Devices[currentIDSession].DataType.ToString() + " ";
             }
@@ -583,6 +620,9 @@ namespace LoggerDeviceValues
             {
                 System_LogMessage("Устройство " + DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() + " перестало отвечать", 'R', IDSession);
             }
+            if (!flagHaveActiveDev && GlobalState == StateMachine.HaveConectedDevice) GlobalState = StateMachine.NowNotConnectedDevice;
+            if (flagHaveActiveDev && GlobalState == StateMachine.NowNotConnectedDevice) GlobalState = StateMachine.HaveConectedDevice;
+            UpdateBlockUI();
         }
 
         public void System_AddValueToGraph(decimal value, LabDevice.DataTypes type, DateTime time, int IDSession)
@@ -592,10 +632,17 @@ namespace LoggerDeviceValues
             {
                 if (CurrentSeries.Tag.ToString() == IDSession.ToString())
                 {
-                    CurrentSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(time), (double)value));
-                    while (CurrentSeries.Points.Count > 150) CurrentSeries.Points.RemoveAt(0);
-                    MainChartModel.GetAxis(IDSession.ToString()).Title = type.ToString();
-                    //CurrentSeries.YAxis.Title = type.ToString();
+                    if (time != DateTime.MinValue)
+                    {
+                        CurrentSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(time), (double)value));
+                        while (CurrentSeries.Points.Count > 150) CurrentSeries.Points.RemoveAt(0);
+                        MainChartModel.GetAxis(IDSession.ToString()).Title = type.ToString();
+                        //CurrentSeries.YAxis.Title = type.ToString();
+                    }
+                    else
+                    {
+                        CurrentSeries.Points.Add(DataPoint.Undefined);
+                    }
                 }
                 else
                 {
@@ -853,6 +900,12 @@ namespace LoggerDeviceValues
             System_UpdateLifeInfo(DateTime.MinValue);
         }
 
+
+
+
+
+
+
         public void System_LogMessage(String _text, char type, int IDSession)
         {
             SolidColorBrush newcolor = new SolidColorBrush(Colors.Transparent);
@@ -881,7 +934,7 @@ namespace LoggerDeviceValues
                     }
                     if (type == 'R')
                     {
-                        DeviceManager_Obj.RemoveNotActiveDevice(IDSession);
+                        DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
                         ListBox_Log.Items.Remove(CurrentItem);
                         break;
                     }
@@ -889,71 +942,68 @@ namespace LoggerDeviceValues
             }
         }
 
-
-        public void System_SaveLabDevDataToFile(LabDevice dataInDev, string filename)
+        private void backgroundWorker_SaveLabDevDataToFile(object sender, DoWorkEventArgs e)
         {
+            List<object> genericlist = e.Argument as List<object>;
+
+            LabDevice currentdev = genericlist[0] as LabDevice;
             StreamWriter localStreamWriter;
-            localStreamWriter = File.CreateText(filename);
+            localStreamWriter = File.CreateText(genericlist[1] as string);
 
             localStreamWriter.WriteLine("Выгрузка измерений " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
-            localStreamWriter.WriteLine("Название устройства " + dataInDev.DeviceName.ToString());
-            localStreamWriter.WriteLine("Тип данных " + dataInDev.DataType.ToString());
-            localStreamWriter.WriteLine("Количество измерений " + dataInDev.CounterMeasure.ToString());
+            localStreamWriter.WriteLine("Название устройства " + currentdev.DeviceName.ToString());
+            localStreamWriter.WriteLine("Тип данных " + currentdev.DataType.ToString());
+            localStreamWriter.WriteLine("Количество измерений " + currentdev.CounterMeasure.ToString());
             localStreamWriter.Flush();
-            localStreamWriter.AutoFlush = true;
+            localStreamWriter.AutoFlush = false;
 
-            string delemiter = (bool)RadioButton_BurnTXT.IsChecked ? " " : ";";
+            string delemiter = genericlist[2] as string;
+            string StringForBurnToFile = "";
 
-            lock (dataInDev.MeasuresBase)
+            for (int i = 0; i < currentdev.MeasuresBase.Count; i++)
             {
-                foreach(DeviceManager.MeasureStruct measure in dataInDev.MeasuresBase)
+                StringForBurnToFile = LabDevice.ConvertScientific(currentdev.MeasuresBase[i].Val, LabDevice.DataTypes.Abstract);
+                if ((bool)genericlist[3]) StringForBurnToFile += delemiter + LabDevice.ConvertFixedPoint(currentdev.MeasuresBase[i].Val, currentdev.MeasuresBase[i].Typ);
+                if ((bool)genericlist[4]) StringForBurnToFile += delemiter + i.ToString();//(MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString();
+                if ((bool)genericlist[5]) StringForBurnToFile += delemiter + currentdev.MeasuresBase[i].TS.ToString("dd.MM.yyyy");
+                if ((bool)genericlist[6]) StringForBurnToFile += delemiter + currentdev.MeasuresBase[i].TS.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
+                if ((bool)genericlist[7]) StringForBurnToFile += delemiter + currentdev.MeasuresBase[i].RAW;
+
+                localStreamWriter.WriteLine(StringForBurnToFile);
+
+                if (i % 10000 == 0)
                 {
-                    string StringForBurnToFile = "";
-
-                    StringForBurnToFile = LabDevice.ConvertScientific(measure.Val, LabDevice.DataTypes.Abstract);
-                    if (CheckBox_BurnFixedPoint.IsChecked.Value) StringForBurnToFile += delemiter + LabDevice.ConvertFixedPoint(measure.Val, measure.Typ);
-                    if (CheckBox_BurnCounter.IsChecked.Value) StringForBurnToFile += delemiter + dataInDev.MeasuresBase.IndexOf(measure);//(MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString();
-                    if (CheckBox_BurnDate.IsChecked.Value) StringForBurnToFile += delemiter + measure.TS.ToString("dd.MM.yyyy");
-                    if (CheckBox_BurnTime.IsChecked.Value) StringForBurnToFile += delemiter + measure.TS.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
-                    if (CheckBox_BurnRAW.IsChecked.Value) StringForBurnToFile += delemiter + measure.RAW;
-
-                    localStreamWriter.WriteLine(StringForBurnToFile);
+                    (sender as BackgroundWorker).ReportProgress((int)((double)i / (double)currentdev.MeasuresBase.Count * 100));
                 }
             }
             localStreamWriter.Flush();
             localStreamWriter.Close();
+            e.Result = genericlist[8] as string; //DeviceManager_Obj.Devices.FirstOrDefault(x => x.Value == currentdev).Key;
+        }
 
+        private void backgroundWorker_SaveLabDevDataToFile_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ProgressBar_Status.Value = e.ProgressPercentage;
+            TextBlock_ETA.Text = "Запись в файл " + e.ProgressPercentage.ToString() + "%";
+        }
 
-
-            //string StringForBurnToFile = "";
-            ////if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            ////else
-            ////{
-            ////    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            ////    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
-            ////    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
-            ////}
-            //MainParam_StreamWriter.WriteLine(StringForBurnToFile);
-            //try
-            //{
-            //    if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
-            //    {
-            //        MainParam_StreamWriter.Flush();
-            //        if (MainParam_CounterMeasure_End == 0)
-            //        {
-            //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-            //            //TextBlock_StatusBurn.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "\nОкончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-            //        }
-            //        else
-            //        {
-            //            TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание в ~" + DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - MainParam_CounterMeasure) * MainParam_MillsBetweenMeasure.Average()).ToString("dd/MM/yyyy HH:mm:ss");
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
-            //}
+        private void backgroundWorker_SaveLabDevDataToFile_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled == true)
+            {
+                
+            }
+            else if (e.Error != null)
+            {
+                
+            }
+            else
+            {
+                System_LogMessage("Текущее сессия записана в файл", 'I', Int32.Parse(e.Result.ToString()));
+                Button_SaveCurrentData.IsEnabled = true;
+                TextBlock_ETA.Text = "Время / Измерения до окончания";
+                ProgressBar_Status.Value = 0;
+            }
         }
 
         private void Button_SaveCurrentData_Click(object sender, RoutedEventArgs e)
@@ -972,13 +1022,81 @@ namespace LoggerDeviceValues
                         DateTime.Now.ToString("dd.MM.yyyy HH-mm-ss") + " " + DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())].DeviceName.ToString();
                     if (saveFileDialog.ShowDialog() == true)
                     {
-                        System_SaveLabDevDataToFile(DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())], saveFileDialog.FileName);
-                        System_LogMessage("Текущее сессия записана в файл", 'I', Int32.Parse(CurrentItem.Tag.ToString()));
+                        BackgroundWorker bgw;
+                        bgw = new BackgroundWorker();
+                        bgw.WorkerReportsProgress = true;
+                        bgw.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker_SaveLabDevDataToFile_ProgressChanged);
+                        bgw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker_SaveLabDevDataToFile_RunWorkerCompleted);
+                        bgw.DoWork += new DoWorkEventHandler(backgroundWorker_SaveLabDevDataToFile);
+
+                        List<object> arguments = new List<object>();
+                        arguments.Add(DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())]);
+                        arguments.Add(saveFileDialog.FileName);
+                        arguments.Add((bool)RadioButton_BurnTXT.IsChecked ? " " : ";");
+                        arguments.Add(CheckBox_BurnFixedPoint.IsChecked.Value);
+                        arguments.Add(CheckBox_BurnCounter.IsChecked.Value);
+                        arguments.Add(CheckBox_BurnDate.IsChecked.Value);
+                        arguments.Add(CheckBox_BurnTime.IsChecked.Value);
+                        arguments.Add(CheckBox_BurnRAW.IsChecked.Value);
+                        arguments.Add(CurrentItem.Tag.ToString());
+
+                        bgw.RunWorkerAsync(arguments);
+
+                        Button_SaveCurrentData.IsEnabled = false;
+                        //System_SaveLabDevDataToFile(DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())], saveFileDialog.FileName);
+                        //System_LogMessage("Текущее сессия записана в файл", 'I', Int32.Parse(CurrentItem.Tag.ToString()));
                     }
                     break;
                 }
             }
             
+        }
+
+
+
+
+
+
+        private void RadioButton_ChangeSkipDataAction(object sender, RoutedEventArgs e)
+        {
+            if (RadioButton_StartMeasure.IsChecked == false)
+            {
+                if (DeviceManager_Obj.Devices[Global_SelectedDevice].ignore == false) DeviceManager_Obj.Devices[Global_SelectedDevice].ignore = true;
+            }
+            else
+            {
+                if (DeviceManager_Obj.Devices[Global_SelectedDevice].ignore == true)
+                {
+                    System_AddValueToGraph(0, 0, DateTime.MinValue, Global_SelectedDevice);
+                    DeviceManager_Obj.Devices[Global_SelectedDevice].PastMeasure = DateTime.Now;
+                    DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Clear();
+                    DeviceManager_Obj.Devices[Global_SelectedDevice].ignore = false;
+                }
+            }
+        }
+
+        private void Button_DisableDriver_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+
+
+
+
+
+
+        public void UpdateBlockUI()
+        {
+            switch (GlobalState)
+            {
+                case StateMachine.NowNotConnectedDevice:
+                    GroupBox_Burning.IsEnabled = false;
+                    break;
+                case StateMachine.HaveConectedDevice:
+                    GroupBox_Burning.IsEnabled = true;
+                    break;
+            }
         }
 
 
@@ -1215,6 +1333,10 @@ namespace LoggerDeviceValues
             //}
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
+
+
+
+
 
         //private void CheckBox_AnimatedGraph_Click(object sender, RoutedEventArgs e)
         //{

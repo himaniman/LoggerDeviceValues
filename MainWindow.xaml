@@ -76,7 +76,7 @@
                                 <Button Grid.Row="2" Grid.Column="1" Name="Button_SetPathFile" Content="Указать директорию" Margin="5,5,5,5" ToolTip="По умолчанию файл будет сохранен на рабочий стол"/>
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Управление записью в файл" Margin="5,5,5,5" IsEnabled="True">
+                        <GroupBox Header="Управление записью в файл" Name="GroupBox_Burning" Margin="5,5,5,5" IsEnabled="True">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>
@@ -162,7 +162,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" IsEnabled="False">
+                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" GroupName="SkipData" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" IsEnabled="False" Click="RadioButton_ChangeSkipDataAction">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Получать данные   "/>
                                     <Canvas x:Name="appbar_control_fastforward_variant" Width="28" Height="15">
@@ -170,7 +170,7 @@
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
-                            <RadioButton Grid.Column="1" Name="RadioButton_PauseMeasure" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False">
+                            <RadioButton Grid.Column="1" Name="RadioButton_PauseMeasure" GroupName="SkipData" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False" Click="RadioButton_ChangeSkipDataAction">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Пауза   "/>
                                     <Canvas x:Name="appbar_pause" Width="16" Height="16">
@@ -178,14 +178,14 @@
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
-                            <RadioButton Grid.Column="2" Name="RadioButton_DisableDriver" GroupName="ActiveMeasure" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False">
+                            <Button Grid.Column="2" Name="Button_DisableDriver" IsEnabled="False" Click="Button_DisableDriver_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Отлючить устройство   "/>
                                     <Canvas x:Name="appbar_close" Width="16" Height="16">
                                         <Path Width="16" Height="16" Stretch="Fill" Fill="#FFFF0000" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
                                 </StackPanel>
-                            </RadioButton>
+                            </Button>
                             <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
                         </Grid>
                         <oxy:PlotView Grid.Row="2" Name="MainChart" Model="{Binding MainChartModel}" />
@@ -240,20 +240,25 @@
                                 <ComboBoxItem Content="∞" Tag="1"/>
                             </ComboBox>
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Макс. выборок на графике" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Name="TextBlock_CounterMeasure" Text="Выборок" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="Получено значений" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="1" Grid.Column="2" Name="TextBlock_FreqMeasure" Text="Выборок/минуту" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            
                             <TextBlock Grid.Row="2" Grid.Column="2" Text="Частота измерений" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Статистика">
-                    <Grid Margin="10,10,10,10">
+                    <StackPanel>
+                        <TextBlock Name="TextBlock_Statistics_FreqMeasure" Text="Выборок/минуту" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Name="TextBlock_Statistics_CounterMeasure" Text="Максимум" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Button Content="Button" Click="Button_Click"/>
+                    </StackPanel>
+                    <!--<Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="6*"/>
                             <RowDefinition Height="150"/>
                         </Grid.RowDefinitions>
-                        <!--<lvc:CartesianChart Grid.Row="0" Name="AllChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
+                        --><!--<lvc:CartesianChart Grid.Row="0" Name="AllChart" Zoom="X" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
                             <lvc:CartesianChart.Series>
                                 <lvc:LineSeries Values="{Binding AllChartValues}" 
                                     PointGeometry="{x:Null}" 
@@ -283,9 +288,9 @@
                                         </lvc:Axis.Sections>--><!--
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
-                        </lvc:CartesianChart>-->
+                        </lvc:CartesianChart>--><!--
                         <Button Content="Button" HorizontalAlignment="Left" Margin="182,64,0,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
-                    </Grid>
+                    </Grid>-->
                 </TabItem>
                 <TabItem Header="Настройки">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">

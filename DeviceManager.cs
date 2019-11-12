@@ -75,12 +75,14 @@ namespace LoggerDeviceValues
                     {
                         if (Devices[CurrentIDSession].DataType != measure.Typ)
                         {
+                            //пришли данные нового типа, в старой нет данных, заменить старую сессию
                             if (Devices[CurrentIDSession].CounterMeasure == 0)
                             {
                                 Devices[CurrentIDSession].DataType = measure.Typ;
                                 Devices[CurrentIDSession].NewValue(measure);
                                 MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
                             }
+                            //пришли данные нового типа, но данных в старой слишком мало. удалить старую
                             else if (Devices[CurrentIDSession].CounterMeasure > 0 && Devices[CurrentIDSession].CounterMeasure < 10)
                             {
                                 int NewIDSession = 1;
@@ -92,6 +94,7 @@ namespace LoggerDeviceValues
                                 Devices[NewIDSession].NewValue(measure);
                                 MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, NewIDSession);
                             }
+                            //Пришли новые данные другого типа, добавить новую сессию
                             else if (Devices[CurrentIDSession].CounterMeasure >= 10)
                             {
                                 int NewIDSession = 1;
@@ -104,10 +107,14 @@ namespace LoggerDeviceValues
                                 MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, NewIDSession);
                             }
                         }
+                        //просто пришли данные
                         else
                         {
-                            Devices[CurrentIDSession].NewValue(measure);
-                            MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
+                            if (!Devices[CurrentIDSession].ignore)
+                            {
+                                Devices[CurrentIDSession].NewValue(measure);
+                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
+                            }
                         }
                     }
                 }
@@ -117,7 +124,7 @@ namespace LoggerDeviceValues
                     {
                         //случай если была пауза продилась как 3 раза * стандартное значение задержки между данными
                         //то значит надо создать новый лаб девайс чтобы новые данные если прийдут то лягут туды
-                        if (Devices[i].CounterMeasure > 10)
+                        if (Devices[i].MillsBetweenMeasure.Count >= 10 && !Devices[i].ignore)
                         {
                             if (Devices[i].PastMeasure + TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) < DateTime.Now)
                             {
@@ -169,10 +176,17 @@ namespace LoggerDeviceValues
             }
         }
 
-        public void RemoveNotActiveDevice(int IDSession)
+        public void RemoveAndDisonnectDevice(int IDSession)
         {
-            Devices.Remove(IDSession);
-            MainWindowEventNewValue(0, 0, DateTime.MinValue, -1);
+            if (Devices[IDSession].active == false && Devices[IDSession].IDTargetDriver == -1)
+            {
+                Devices.Remove(IDSession);
+                MainWindowEventNewValue(0, 0, DateTime.MinValue, -1);
+            }
+            else if (Devices[IDSession].active == true && Devices[IDSession].IDTargetDriver > -1)
+            {
+
+            }
         }
 
         public List<string> ScanAvilibleInterfaces()
