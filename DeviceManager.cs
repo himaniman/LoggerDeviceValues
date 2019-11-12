@@ -120,36 +120,42 @@ namespace LoggerDeviceValues
                 }
                 foreach (int i in Devices.Keys.ToArray())
                 {
-                    if (Devices[i].active)
+                    if (Devices.ContainsKey(i))
                     {
-                        //случай если была пауза продилась как 3 раза * стандартное значение задержки между данными
-                        //то значит надо создать новый лаб девайс чтобы новые данные если прийдут то лягут туды
-                        if (Devices[i].MillsBetweenMeasure.Count >= 10 && !Devices[i].ignore)
+                        if (Devices[i].active)
                         {
-                            if (Devices[i].PastMeasure + TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) < DateTime.Now)
+                            //случай если была пауза продилась как 3 раза * стандартное значение задержки между данными
+                            //то значит надо создать новый лаб девайс чтобы новые данные если прийдут то лягут туды
+                            if (Devices[i].MillsBetweenMeasure.Count >= 10 && !Devices[i].ignore)
                             {
-                                int NewIDSession = 1;
-                                if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
+                                if (Devices[i].PastMeasure +
+                                    (TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) > TimeSpan.FromSeconds(2) ?
+                                    TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) : TimeSpan.FromSeconds(2)) 
+                                    < DateTime.Now)
+                                {
+                                    int NewIDSession = 1;
+                                    if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
 
-                                Devices.Add(NewIDSession, new LabDevice(Devices[i].DeviceName, LabDevice.DataTypes.Abstract, Devices[i].IDTargetDriver));
-                                Devices[i].IDTargetDriver = -1;
-                                Devices[i].active = false;
+                                    Devices.Add(NewIDSession, new LabDevice(Devices[i].DeviceName, LabDevice.DataTypes.Abstract, Devices[i].IDTargetDriver));
+                                    Devices[i].IDTargetDriver = -1;
+                                    Devices[i].active = false;
 
-                                MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
+                                    MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
 
-                                break;
-                                //else
-                                //{
-                                //    //данные пришли меньше 10 штук, потом тишина. тип данных не менялись, просто вытащили штекер. те несколько значений будут висеть на экране?
-                                //    int NewIDSession = 1;
-                                //    if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
+                                    break;
+                                    //else
+                                    //{
+                                    //    //данные пришли меньше 10 штук, потом тишина. тип данных не менялись, просто вытащили штекер. те несколько значений будут висеть на экране?
+                                    //    int NewIDSession = 1;
+                                    //    if (Devices.Count > 0) NewIDSession = Devices.Keys.Max() + 1;
 
-                                //    Devices.Add(NewIDSession, new LabDevice(Devices[i].DeviceName, LabDevice.DataTypes.Abstract, Devices[i].IDTargetDriver));
-                                //    Devices.Remove(i);
+                                    //    Devices.Add(NewIDSession, new LabDevice(Devices[i].DeviceName, LabDevice.DataTypes.Abstract, Devices[i].IDTargetDriver));
+                                    //    Devices.Remove(i);
 
-                                //    //MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
-                                //    break;
-                                //}
+                                    //    //MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
+                                    //    break;
+                                    //}
+                                }
                             }
                         }
                     }

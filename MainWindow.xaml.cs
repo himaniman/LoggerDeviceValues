@@ -34,6 +34,7 @@ using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Axes;
 using System.ComponentModel;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace LoggerDeviceValues
 {
@@ -464,9 +465,9 @@ namespace LoggerDeviceValues
             ////AxisStep = TimeSpan.FromSeconds(10).Ticks;
             ////AxisUnit = TimeSpan.TicksPerSecond;
 
-            if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
-                TextBox_FileName.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
-            else TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            //if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
+            //    TextBox_FileName.Text = "Logger_Measure " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            //else TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
 
             //YFormatter = value => value.ToString("e");
 
@@ -527,6 +528,7 @@ namespace LoggerDeviceValues
             //ThreadAwaitData_Discriptor.Start();
             //DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
             UpdateBlockUI();
+            CheckBox_BurnStringChange(null, null);
         }
 
         public delegate void EventNewValueDelegate(decimal Val, LabDevice.DataTypes Typ, DateTime TS, int IDSession);
@@ -557,6 +559,7 @@ namespace LoggerDeviceValues
                 {
                     ListView_CurrentDev.Items.Remove(currentDevSession);
                     System_UpdateGraph();
+                    RadioButton_ChangeAciveDevice_Checked(null, null);
                     break;
                 }
             }
@@ -884,11 +887,13 @@ namespace LoggerDeviceValues
         {
             if (sender == null)
             {
+                bool HaveSelectedDev = false;
                 foreach(ListBoxItem CurrentItem in ListView_CurrentDev.Items)
                 {
-                    if (Int32.Parse(CurrentItem.Tag.ToString()) == Global_SelectedDevice) CurrentItem.IsSelected = true;
+                    if (Int32.Parse(CurrentItem.Tag.ToString()) == Global_SelectedDevice) { CurrentItem.IsSelected = true; HaveSelectedDev = true; }
                     else CurrentItem.IsSelected = false;
                 }
+                if (!HaveSelectedDev && ListView_CurrentDev.Items.Count>0) { (ListView_CurrentDev.Items[0] as ListBoxItem).IsSelected = true; Global_SelectedDevice = Int32.Parse((ListView_CurrentDev.Items[0] as ListBoxItem).Tag.ToString()); }
             }
             else
             {
@@ -1003,6 +1008,8 @@ namespace LoggerDeviceValues
                 Button_SaveCurrentData.IsEnabled = true;
                 TextBlock_ETA.Text = "Время / Измерения до окончания";
                 ProgressBar_Status.Value = 0;
+                GlobalState = StateMachine.HaveConectedDevice;
+                UpdateBlockUI();
             }
         }
 
@@ -1011,7 +1018,7 @@ namespace LoggerDeviceValues
             //Random rnd = new Random();
             //System_AddValueToGraph((decimal)(rnd.NextDouble() * 100), LabDevice.DataTypes.Voltage);
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text file (*.txt)|*.txt";
+            saveFileDialog.Filter = "Text file (*.txt)|*.txt|CSV (*.csv)|*.csv";
             saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
             foreach (ListBoxItem CurrentItem in ListView_CurrentDev.Items)
@@ -1022,6 +1029,9 @@ namespace LoggerDeviceValues
                         DateTime.Now.ToString("dd.MM.yyyy HH-mm-ss") + " " + DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())].DeviceName.ToString();
                     if (saveFileDialog.ShowDialog() == true)
                     {
+                        GlobalState = StateMachine.BurningFileCurrentDevice;
+                        UpdateBlockUI();
+
                         BackgroundWorker bgw;
                         bgw = new BackgroundWorker();
                         bgw.WorkerReportsProgress = true;
@@ -1032,7 +1042,7 @@ namespace LoggerDeviceValues
                         List<object> arguments = new List<object>();
                         arguments.Add(DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())]);
                         arguments.Add(saveFileDialog.FileName);
-                        arguments.Add((bool)RadioButton_BurnTXT.IsChecked ? " " : ";");
+                        arguments.Add(saveFileDialog.FilterIndex == 1 ? " " : ";");
                         arguments.Add(CheckBox_BurnFixedPoint.IsChecked.Value);
                         arguments.Add(CheckBox_BurnCounter.IsChecked.Value);
                         arguments.Add(CheckBox_BurnDate.IsChecked.Value);
@@ -1051,6 +1061,134 @@ namespace LoggerDeviceValues
             }
             
         }
+
+        private void Button_SetPathFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok) TextBox_FilePath.Text = dialog.FileName;
+        }
+
+        private void Button_FileBurnStart_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalState = StateMachine.Burning;
+            UpdateBlockUI();
+            TabItem_CurrentMeasurment.IsSelected = true;
+            Button_FileBurnStart.Content = "ЗАПИСЬ...";
+            Button_FileBurnStart.Background = new SolidColorBrush(Colors.OrangeRed);
+
+            //if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
+            //{
+            //    Button_FileBurnStart.Content = "Начать запись";
+            //    Button_FileBurnStart.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(221, 221, 221));
+
+            //    RadioButton_FixedPoint.IsEnabled = true;
+            //    RadioButton_Scientific.IsEnabled = true;
+            //    RadioButton_QtyMeas.IsEnabled = true;
+            //    RadioButton_Timer.IsEnabled = true;
+            //    //TextBox_FilePos.IsEnabled = true;
+            //    //Button_GenerateNewNameFile.IsEnabled = true;
+            //    //Button_SetPathFile.IsEnabled = true;
+            //    //CheckBox_ValueOnly.IsEnabled = true;
+            //    //TextBox_FragmentSize.IsEnabled = true;
+
+            //    MainParam_CounterMeasure_End = MainParam_CounterMeasure;
+            //    //MainChart.AxisX[0].Sections.Add(new AxisSection
+            //    //{
+            //    //    Value = MainParam_CounterMeasure_End,
+            //    //    StrokeThickness = 3,
+            //    //    Stroke = new SolidColorBrush(Color.FromRgb(220, 30, 30)),
+            //    //    DataLabel = true,
+            //    //});
+
+            //    TextBlock_Status.Text = "Запись окончена в " + DateTime.Now.ToString("HH:mm") +
+            //        "    Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " Значений";
+
+            //    MainParam_StreamWriter.WriteLine("Окончание записи " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") +
+            //        ". Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " значений.");
+            //    MainParam_StreamWriter.WriteLine("");
+            //    MainParam_StreamWriter.Flush();
+
+            //    ProgressBar_Status.Value = 0;
+            //    TextBlock_ETA.Text = "";
+            //    return;
+            //}
+            //if (Button_FileBurnStart.Content.ToString() == "Начать запись")
+            //{
+            //    try
+            //    {
+            //        //string filepath;
+            //        //if (TextBox_FileName.Text.Contains("\\")) filepath = TextBox_FileName.Text;
+            //        //else filepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + TextBox_FileName.Text;
+            //        //if (MainParam_StreamWriter != null) MainParam_StreamWriter.Close();
+            //        //if (File.Exists(filepath))
+            //        //{
+            //        //    if (MessageBox.Show("Файл " + filepath + " уже существует, дописать?", "Запись в файл", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            //        //    {
+            //        //        MainParam_StreamWriter = File.AppendText(filepath);
+            //        //    }
+            //        //    else return;
+            //        //}
+            //        //else
+            //        //{
+            //        //    MainParam_StreamWriter = File.CreateText(filepath);
+            //        //}
+            //        MainParam_StreamWriter.WriteLine("Старт записи измерений " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+            //        MainParam_StreamWriter.WriteLine("Название устройства " + MainParam_DeviceName.ToString());
+            //        MainParam_StreamWriter.WriteLine("Тип данных " + MainParam_DataType.ToString());
+            //        MainParam_StreamWriter.Flush();
+            //        MainParam_StreamWriter.AutoFlush = false;
+
+            //        Button_FileBurnStart.Content = "ЗАПИСЬ...";
+            //        Button_FileBurnStart.Background = new SolidColorBrush(Colors.OrangeRed);
+            //        RadioButton_FixedPoint.IsEnabled = false;
+            //        RadioButton_Scientific.IsEnabled = false;
+            //        RadioButton_QtyMeas.IsEnabled = false;
+            //        RadioButton_Timer.IsEnabled = false;
+            //        //TextBox_FilePos.IsEnabled = false;
+            //        //Button_GenerateNewNameFile.IsEnabled = false;
+            //        //Button_SetPathFile.IsEnabled = false;
+            //        //CheckBox_ValueOnly.IsEnabled = false;
+            //        //TextBox_FragmentSize.IsEnabled = false;
+
+            //        MainParam_CounterMeasure_Start = MainParam_CounterMeasure;
+            //        MainParam_TimeStartMeasure = DateTime.Now;
+            //        ////MainChart.AxisX[0].Sections.Add(new AxisSection
+            //        ////{
+            //        ////    Value = MainParam_CounterMeasure_Start,
+            //        ////    StrokeThickness = 3,
+            //        ////    Stroke = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 213, 72)),
+            //        ////    DataLabel = true,
+            //        ////});
+
+            //        TextBlock_Status.Text = "Запись начата в " + DateTime.Now.ToString("HH:mm");
+
+            //        if ((bool)RadioButton_Timer.IsChecked)
+            //        {
+            //            MainParam_CounterMeasure_End = 0;
+            //            if (MainParam_Timer != null) MainParam_Timer.Stop();
+            //            MainParam_Timer = new DispatcherTimer();
+
+            //            MainParam_Timer.Interval = TimeSpanUpDown_Timer.Value.Value;
+            //            MainParam_Timer.Start();
+            //            MainParam_Timer.Tick += MainParam_Timer_Tick;
+            //            MainParam_TimeEndMeasure = DateTime.Now.AddSeconds(TimeSpanUpDown_Timer.Value.Value.TotalSeconds);
+            //        }
+            //        if ((bool)RadioButton_QtyMeas.IsChecked)
+            //        {
+            //            MainParam_CounterMeasure_End = MainParam_CounterMeasure + (int)IntegerUpDown_QtyMeas.Value;
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show(ex.ToString());
+            //    }
+            //}
+
+            ////MainParam_SummTimeBetweenMeasure = 0;
+            //MainParam_PastMeasure = DateTime.Now;
+        }
+
 
 
 
@@ -1092,14 +1230,53 @@ namespace LoggerDeviceValues
             {
                 case StateMachine.NowNotConnectedDevice:
                     GroupBox_Burning.IsEnabled = false;
+                    Button_SaveCurrentData.IsEnabled = true;
+                    TabItem_Settings.IsEnabled = true;
                     break;
                 case StateMachine.HaveConectedDevice:
                     GroupBox_Burning.IsEnabled = true;
+                    Button_FileBurnStart.IsEnabled = true;
+                    Button_SaveCurrentData.IsEnabled = true;
+                    RadioButton_QtyMeas.IsEnabled = true;
+                    RadioButton_Timer.IsEnabled = true;
+                    TimeSpanUpDown_Timer.IsEnabled = true;
+                    IntegerUpDown_QtyMeas.IsEnabled = true;
+                    TabItem_Settings.IsEnabled = true;
+                    break;
+                case StateMachine.BurningFileCurrentDevice:
+                    Button_FileBurnStart.IsEnabled = false;
+                    Button_SaveCurrentData.IsEnabled = false;
+                    RadioButton_QtyMeas.IsEnabled = true;
+                    RadioButton_Timer.IsEnabled = true;
+                    TimeSpanUpDown_Timer.IsEnabled = true;
+                    IntegerUpDown_QtyMeas.IsEnabled = true;
+                    TabItem_Settings.IsEnabled = true;
+                    break;
+                case StateMachine.Burning:
+                    Button_SaveCurrentData.IsEnabled = false;
+                    RadioButton_QtyMeas.IsEnabled = false;
+                    RadioButton_Timer.IsEnabled = false;
+                    TimeSpanUpDown_Timer.IsEnabled = false;
+                    IntegerUpDown_QtyMeas.IsEnabled = false;
+                    TabItem_Settings.IsEnabled = false;
                     break;
             }
         }
 
-
+        private void CheckBox_BurnStringChange(object sender, RoutedEventArgs e)
+        {
+            string StringForBurnToFile = "";
+            Random rnd = new Random();
+            decimal value = (decimal)rnd.NextDouble() * 3000;
+            LabDevice.DataTypes type = (LabDevice.DataTypes)rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length);
+            StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+            if (CheckBox_BurnFixedPoint.IsChecked.Value) StringForBurnToFile += " " + LabDevice.ConvertFixedPoint(value, type);
+            if (CheckBox_BurnCounter.IsChecked.Value) StringForBurnToFile += " " + rnd.Next(10000);//(MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString();
+            if (CheckBox_BurnDate.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("dd.MM.yyyy");
+            if (CheckBox_BurnTime.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
+            if (CheckBox_BurnRAW.IsChecked.Value) StringForBurnToFile += " " + "0x00 0xff 0x00 0xff";
+            TextBlock_BurnString.Text = StringForBurnToFile;
+        }
 
 
 
@@ -1112,18 +1289,10 @@ namespace LoggerDeviceValues
 
         private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)
         {
-            TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+            //TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
         }
 
-        private void Button_SetPathFile_Click(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text file (*.txt)|*.txt";
-            saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            saveFileDialog.FileName = TextBox_FileName.Text;
-            if (saveFileDialog.ShowDialog() == true)
-                TextBox_FileName.Text = saveFileDialog.FileName;
-        }
+        
 
         private void RadioButton_FixedPoint_Click(object sender, RoutedEventArgs e)
         {
@@ -1181,120 +1350,6 @@ namespace LoggerDeviceValues
             Button_FileBurnStart_Click(null, null);
         }
 
-        private void Button_FileBurnStart_Click(object sender, RoutedEventArgs e)
-        {
-            if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
-            {
-                Button_FileBurnStart.Content = "Начать запись";
-                Button_FileBurnStart.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(221, 221, 221));
-
-                RadioButton_FixedPoint.IsEnabled = true;
-                RadioButton_Scientific.IsEnabled = true;
-                RadioButton_QtyMeas.IsEnabled = true;
-                RadioButton_Timer.IsEnabled = true;
-                //TextBox_FilePos.IsEnabled = true;
-                //Button_GenerateNewNameFile.IsEnabled = true;
-                Button_SetPathFile.IsEnabled = true;
-                //CheckBox_ValueOnly.IsEnabled = true;
-                //TextBox_FragmentSize.IsEnabled = true;
-
-                MainParam_CounterMeasure_End = MainParam_CounterMeasure;
-                //MainChart.AxisX[0].Sections.Add(new AxisSection
-                //{
-                //    Value = MainParam_CounterMeasure_End,
-                //    StrokeThickness = 3,
-                //    Stroke = new SolidColorBrush(Color.FromRgb(220, 30, 30)),
-                //    DataLabel = true,
-                //});
-
-                TextBlock_Status.Text = "Запись окончена в " + DateTime.Now.ToString("HH:mm") +
-                    "    Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " Значений";
-
-                MainParam_StreamWriter.WriteLine("Окончание записи " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") +
-                    ". Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " значений.");
-                MainParam_StreamWriter.WriteLine("");
-                MainParam_StreamWriter.Flush();
-
-                ProgressBar_Status.Value = 0;
-                TextBlock_ETA.Text = "";
-                return;
-            }
-            if (Button_FileBurnStart.Content.ToString() == "Начать запись")
-            {
-                try
-                {
-                    string filepath;
-                    if (TextBox_FileName.Text.Contains("\\")) filepath = TextBox_FileName.Text;
-                    else filepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + TextBox_FileName.Text;
-                    if (MainParam_StreamWriter != null) MainParam_StreamWriter.Close();
-                    if (File.Exists(filepath))
-                    {
-                        if (MessageBox.Show("Файл " + filepath + " уже существует, дописать?", "Запись в файл", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                        {
-                            MainParam_StreamWriter = File.AppendText(filepath);
-                        }
-                        else return;
-                    }
-                    else
-                    {
-                        MainParam_StreamWriter = File.CreateText(filepath);
-                    }
-                    MainParam_StreamWriter.WriteLine("Старт записи измерений " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
-                    MainParam_StreamWriter.WriteLine("Название устройства " + MainParam_DeviceName.ToString());
-                    MainParam_StreamWriter.WriteLine("Тип данных " + MainParam_DataType.ToString());
-                    MainParam_StreamWriter.Flush();
-                    MainParam_StreamWriter.AutoFlush = false;
-
-                    Button_FileBurnStart.Content = "ЗАПИСЬ...";
-                    Button_FileBurnStart.Background = new SolidColorBrush(Colors.OrangeRed);
-                    RadioButton_FixedPoint.IsEnabled = false;
-                    RadioButton_Scientific.IsEnabled = false;
-                    RadioButton_QtyMeas.IsEnabled = false;
-                    RadioButton_Timer.IsEnabled = false;
-                    //TextBox_FilePos.IsEnabled = false;
-                    //Button_GenerateNewNameFile.IsEnabled = false;
-                    Button_SetPathFile.IsEnabled = false;
-                    //CheckBox_ValueOnly.IsEnabled = false;
-                    //TextBox_FragmentSize.IsEnabled = false;
-
-                    MainParam_CounterMeasure_Start = MainParam_CounterMeasure;
-                    MainParam_TimeStartMeasure = DateTime.Now;
-                    ////MainChart.AxisX[0].Sections.Add(new AxisSection
-                    ////{
-                    ////    Value = MainParam_CounterMeasure_Start,
-                    ////    StrokeThickness = 3,
-                    ////    Stroke = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 213, 72)),
-                    ////    DataLabel = true,
-                    ////});
-
-                    TextBlock_Status.Text = "Запись начата в " + DateTime.Now.ToString("HH:mm");
-
-                    if ((bool)RadioButton_Timer.IsChecked)
-                    {
-                        MainParam_CounterMeasure_End = 0;
-                        if (MainParam_Timer != null) MainParam_Timer.Stop();
-                        MainParam_Timer = new DispatcherTimer();
-
-                        MainParam_Timer.Interval = TimeSpanUpDown_Timer.Value.Value;
-                        MainParam_Timer.Start();
-                        MainParam_Timer.Tick += MainParam_Timer_Tick;
-                        MainParam_TimeEndMeasure = DateTime.Now.AddSeconds(TimeSpanUpDown_Timer.Value.Value.TotalSeconds);
-                    }
-                    if ((bool)RadioButton_QtyMeas.IsChecked)
-                    {
-                        MainParam_CounterMeasure_End = MainParam_CounterMeasure + (int)IntegerUpDown_QtyMeas.Value;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString());
-                }
-            }
-
-            //MainParam_SummTimeBetweenMeasure = 0;
-            MainParam_PastMeasure = DateTime.Now;
-        }
-
         //private void MainChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         //{
         //    MainChart.AxisX[0].MinValue = double.NaN;
@@ -1306,20 +1361,7 @@ namespace LoggerDeviceValues
             System_RefreshAllChart();
         }
 
-        private void CheckBox_BurnStringChange(object sender, RoutedEventArgs e)
-        {
-            string StringForBurnToFile = "";
-            Random rnd = new Random();
-            decimal value = (decimal)rnd.NextDouble() * 3000;
-            LabDevice.DataTypes type = (LabDevice.DataTypes)rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length);
-            StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            if (CheckBox_BurnFixedPoint.IsChecked.Value) StringForBurnToFile += " " + LabDevice.ConvertFixedPoint(value, type);
-            if (CheckBox_BurnCounter.IsChecked.Value) StringForBurnToFile += " " + rnd.Next(10000);//(MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString();
-            if (CheckBox_BurnDate.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("dd.MM.yyyy");
-            if (CheckBox_BurnTime.IsChecked.Value) StringForBurnToFile += " " + DateTime.Now.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
-            if (CheckBox_BurnRAW.IsChecked.Value) StringForBurnToFile += " " + "[RAW]";
-            TextBlock_BurnString.Text = StringForBurnToFile;
-        }
+
 
         private void Window_Shutdown(object sender, System.ComponentModel.CancelEventArgs e)
         {

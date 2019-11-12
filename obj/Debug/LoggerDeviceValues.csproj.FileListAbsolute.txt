@@ -73,3 +73,7 @@ D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.xml
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.xml
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.dll
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.xml
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml

@@ -45,7 +45,7 @@ namespace LoggerDeviceValues
             LabDevice.DataTypes type = LabDevice.DataTypes.Abstract;
             int mul = rnd.Next(-4, 4);
             int ofs = rnd.Next(1, 1000);
-            int del = rnd.Next(100, 200);
+            int del = rnd.Next(100, 300);
             int counterForDisable = 50;
             while (true)
             {
@@ -66,7 +66,7 @@ namespace LoggerDeviceValues
                 //type = LabDevice.DataTypes.Voltage;
                 //this.Dispatcher.Invoke(() => DelegateForNewValue(value));
                 //DelegateForNewValue?.Invoke(value, type, DriverID);
-                QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now , DrvID = DriverID});
+                QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now , DrvID = DriverID, RAW = BitConverter.ToString((BitConverter.GetBytes((double)value))) });
                 //System_serialDataQueue.Enqueue(buffer);
                 //защищенный вызов лаб девайса
                 
