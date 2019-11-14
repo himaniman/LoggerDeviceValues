@@ -31,6 +31,7 @@ namespace LoggerDeviceValues
         public SupportedDevices DeviceName;
         public DataTypes DataType;
         public int CounterMeasure = 0;
+        public int CounterMeasureForBurning = 0;
         public List<int> MillsBetweenMeasure;
         public DateTime PastMeasure;
         public int IDTargetDriver;
@@ -39,6 +40,11 @@ namespace LoggerDeviceValues
 
         public decimal Statistics_Min=0;
         public decimal Statistics_Max=0;
+        public decimal Statistics_Summ = 0;
+        public decimal Statistics_Average = 0;
+        public decimal Statistics_PeakToPeak = 0;
+        public decimal Statistics_SummSquare = 0;
+        public decimal Statistics_RMS = 0;
 
 
         //public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
@@ -105,6 +111,12 @@ namespace LoggerDeviceValues
 
             if (measure.Val < Statistics_Min) Statistics_Min = measure.Val;
             if (measure.Val > Statistics_Max) Statistics_Max = measure.Val;
+            Statistics_Summ += measure.Val;
+            Statistics_Average = Statistics_Summ / CounterMeasure;
+            Statistics_PeakToPeak = Statistics_Max - Statistics_Min;
+            Statistics_SummSquare += (decimal)Math.Pow((double)measure.Val, 2);
+            Statistics_RMS = (decimal)Math.Sqrt((double)(Statistics_SummSquare / CounterMeasure));
+
 
             //записать себе, чтобы потом с другого потока кто то мог взять эти данные, + отправить текущие данные в хост приложение
             //AddValueToFile(value, LabDevice.DataTypes.Abstract, "");

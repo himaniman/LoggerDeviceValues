@@ -31,6 +31,7 @@ namespace LoggerDeviceValues
 
         int DriversIDMax = 0;
         public List<Driver_VirtualDevice> Drivers_VirtualDevice = new List<Driver_VirtualDevice>();
+        public List<Driver_UT71D> Drivers_UT71D = new List<Driver_UT71D>();
 
         public ConcurrentQueue<MeasureStruct> QueueNewValues = new ConcurrentQueue<MeasureStruct>();
 
@@ -80,7 +81,7 @@ namespace LoggerDeviceValues
                             {
                                 Devices[CurrentIDSession].DataType = measure.Typ;
                                 Devices[CurrentIDSession].NewValue(measure);
-                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
+                                MainWindowEventNewValue(measure, CurrentIDSession);
                             }
                             //пришли данные нового типа, но данных в старой слишком мало. удалить старую
                             else if (Devices[CurrentIDSession].CounterMeasure > 0 && Devices[CurrentIDSession].CounterMeasure < 10)
@@ -92,7 +93,7 @@ namespace LoggerDeviceValues
                                 Devices.Remove(CurrentIDSession);
 
                                 Devices[NewIDSession].NewValue(measure);
-                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, NewIDSession);
+                                MainWindowEventNewValue(measure, NewIDSession);
                             }
                             //Пришли новые данные другого типа, добавить новую сессию
                             else if (Devices[CurrentIDSession].CounterMeasure >= 10)
@@ -104,7 +105,7 @@ namespace LoggerDeviceValues
                                 Devices[CurrentIDSession].IDTargetDriver = -1;
 
                                 Devices[NewIDSession].NewValue(measure);
-                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, NewIDSession);
+                                MainWindowEventNewValue(measure, NewIDSession);
                             }
                         }
                         //просто пришли данные
@@ -113,7 +114,7 @@ namespace LoggerDeviceValues
                             if (!Devices[CurrentIDSession].ignore)
                             {
                                 Devices[CurrentIDSession].NewValue(measure);
-                                MainWindowEventNewValue(measure.Val, measure.Typ, measure.TS, CurrentIDSession);
+                                MainWindowEventNewValue(measure, CurrentIDSession);
                             }
                         }
                     }
@@ -140,7 +141,7 @@ namespace LoggerDeviceValues
                                     Devices[i].IDTargetDriver = -1;
                                     Devices[i].active = false;
 
-                                    MainWindowEventNewValue(0, 0, DateTime.MinValue, i);
+                                    MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue}, i);
 
                                     break;
                                     //else
@@ -187,7 +188,7 @@ namespace LoggerDeviceValues
             if (Devices[IDSession].active == false && Devices[IDSession].IDTargetDriver == -1)
             {
                 Devices.Remove(IDSession);
-                MainWindowEventNewValue(0, 0, DateTime.MinValue, -1);
+                MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue}, -1);
             }
             else if (Devices[IDSession].active == true && Devices[IDSession].IDTargetDriver > -1)
             {
@@ -236,13 +237,18 @@ namespace LoggerDeviceValues
             }
             if (_Interface.Contains("USB HID Device"))
             {
-                //if (_Device == LabDevice.SupportedDevices.UT71D.ToString())
-                //{
-                //    //Devices_UT71D.check for equals может до этого мы уже подключались, обработать
-                //    Devices.Add(new LabDevice(LabDevice.SupportedDevices.UT71D, LabDevice.DataTypes.Abstract));
-                //    //Devices_UT71D.Add(new Driver_UT71D()); //сюда бросить ид девайса для того чтобы он знал куда бросать данные при приеме
-                //    //Devices_UT71D.ElementAt(Devices_UT71D.Count - 1).Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
-                //}
+                if (_Device == LabDevice.SupportedDevices.UT71D.ToString())
+                {
+                    //Devices_UT71D.check for equals может до этого мы уже подключались, обработать
+                    //Devices.Add(NewIDSession, new LabDevice(LabDevice.SupportedDevices.UT71D));
+                    //Devices_UT71D.Add(new Driver_UT71D()); //сюда бросить ид девайса для того чтобы он знал куда бросать данные при приеме
+                    //Devices_UT71D.ElementAt(Devices_UT71D.Count - 1).Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
+
+                    Devices.Add(NewIDSession, new LabDevice(LabDevice.SupportedDevices.UT71D));
+                    Drivers_UT71D.Add(new Driver_UT71D(QueueNewValues, DriversIDMax++));
+                    Drivers_UT71D.Last().Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
+                    Devices[NewIDSession].IDTargetDriver = Drivers_UT71D.Last().DriverID;
+                }
                 //if (_Device == LabDevice.SupportedDevices.UT61C.ToString())
                 //{
                 //    //Devices_UT71D.check for equals может до этого мы уже подключались, обработать

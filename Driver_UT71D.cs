@@ -1,5 +1,6 @@
 ﻿using HidSharp;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,13 +36,18 @@ namespace LoggerDeviceValues
         public Thread ThreadRead_Discriptor;
         public HidDevice HIDDevice_Discriptor;
         public HidStream HIDStream_Discriptor;
+
+        ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
+        public int DriverID;
+
         //LabDevice.NewValueDelegate DelegateForNewValue;
 
-        //public Driver_UT71D(LabDevice.NewValueDelegate _valueDelegate)
-        //{
-        //    LocalBuffer = new byte[1];
-        //    //DelegateForNewValue = _valueDelegate;
-        //}
+        public Driver_UT71D(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
+        {
+            QueueNewValues = _QueueNewValuesGlobal;
+            DriverID = _id;
+            LocalBuffer = new byte[1];
+        }
 
         public bool Connect(HidDevice _HidDevice)
         {
@@ -74,6 +80,7 @@ namespace LoggerDeviceValues
                     LabDevice.DataTypes type;
                     if (TryParceData(HIDBuffer, out value, out type, out valueRAW))
                     {
+                        QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now, DrvID = DriverID, RAW = valueRAW });
                         //Debug.WriteLine(valueRAW, type.ToString());
                         //System_NewValue(value, type, valueRAW);
                         //TargetLabDevice.NewValue(value);

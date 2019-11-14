@@ -35,6 +35,7 @@ using OxyPlot.Series;
 using OxyPlot.Axes;
 using System.ComponentModel;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using OxyPlot.Annotations;
 
 namespace LoggerDeviceValues
 {
@@ -75,9 +76,9 @@ namespace LoggerDeviceValues
         public int MainParam_CounterMeasure_Start;
         public int MainParam_CounterMeasure_End;
         StreamWriter MainParam_StreamWriter;
-        DispatcherTimer MainParam_Timer;
-        DateTime MainParam_TimeEndMeasure;
-        DateTime MainParam_TimeStartMeasure;
+        
+        
+        
 
         public string MainParam_InputBuffer;
         public byte[] MainParam_HIDBuffer;
@@ -101,300 +102,307 @@ namespace LoggerDeviceValues
         public List<RadioButton> VisibleDevices { get; set; }
 
         int Global_SelectedDevice;
+        int Global_CounterForAllDev = -1;
+
+        Dictionary<int, StreamWriter> Global_UserFileWriter = new Dictionary<int, StreamWriter>();
+
+        DispatcherTimer Global_Timer;
+        DateTime Global_TimeEndMeasure;
+        DateTime Global_TimeStartMeasure;
 
         //var MainParam_CurrentDevice = new LabDevice();
 
-        public void System_ConnectToDeviceFromAppSettings()
-        {
-            //try
-            //{
-            //    if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
-            //    {
-            //        return;
-            //    }
-            //    if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.HP53132A.ToString())
-            //    {
-            //        if (Properties.Settings.Default.LastConfig == "null" || Properties.Settings.Default.LastConfig == "" || Properties.Settings.Default.LastConfig.Count(x => x==' ') !=2)
-            //        {
-            //            return;
-            //        }
-            //        else {
-            //            String COMName = Properties.Settings.Default.LastConfig.Split(' ')[0];
-            //            int baudrate = int.Parse(Properties.Settings.Default.LastConfig.Split(' ')[1]);
-            //            MainParam_SerialPort = new SerialPort(COMName, baudrate, Parity.None, 8, StopBits.One);
-            //            MainParam_SerialPort.DataReceived += new SerialDataReceivedEventHandler(System_SerialDataReceived);
-            //            if (!MainParam_SerialPort.IsOpen) MainParam_SerialPort.Open();
-            //            if (MainParam_SerialPort.IsOpen)
-            //            {
-            //                TextBlock_Status.Text = "COM port открыт (" + COMName + ")";
-            //                ComboBox_Interfaces.Items.Clear();
-            //                ComboBox_Interfaces.Items.Add(COMName);
-            //                ComboBox_Interfaces.SelectedIndex = 0;
-            //                //ComboBox_Interfaces.Background = new SolidColorBrush(Colors.LightGreen);
-            //                MainParam_DeviceName = LabDevice.SupportedDevices.HP53132A;
-            //            }
-            //        }
-            //    }
-            //    if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.UT71D.ToString())
-            //    {
-            //        DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352);
-            //        if (MainParam_HIDDevice == null) { TextBlock_Status.Text = "Ошибка доступа к HID устройству"; return; }
-            //        if (!MainParam_HIDDevice.TryOpen(out MainParam_HIDStream)) { TextBlock_Status.Text = "Ошибка получения потока чтения для HID устройства"; return; }
-            //        //byte[] InitialConfigStructure = new byte[] { 0x00, 0x09, 0x60, 0x00, 0x00, 0x03 };
-            //        byte[] InitialConfigStructure = new byte[] { 0x00, 0x4B, 0x00, 0x00, 0x00, 0x03 };
-            //        MainParam_HIDStream.SetFeature(InitialConfigStructure);
-            //        MainParam_HIDBuffer = new byte[11];
+        //public void System_ConnectToDeviceFromAppSettings()
+        //{
+        //    //try
+        //    //{
+        //    //    if (Properties.Settings.Default.LastConnectedDevice == "null" || Properties.Settings.Default.LastConnectedDevice == "")
+        //    //    {
+        //    //        return;
+        //    //    }
+        //    //    if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.HP53132A.ToString())
+        //    //    {
+        //    //        if (Properties.Settings.Default.LastConfig == "null" || Properties.Settings.Default.LastConfig == "" || Properties.Settings.Default.LastConfig.Count(x => x==' ') !=2)
+        //    //        {
+        //    //            return;
+        //    //        }
+        //    //        else {
+        //    //            String COMName = Properties.Settings.Default.LastConfig.Split(' ')[0];
+        //    //            int baudrate = int.Parse(Properties.Settings.Default.LastConfig.Split(' ')[1]);
+        //    //            MainParam_SerialPort = new SerialPort(COMName, baudrate, Parity.None, 8, StopBits.One);
+        //    //            MainParam_SerialPort.DataReceived += new SerialDataReceivedEventHandler(System_SerialDataReceived);
+        //    //            if (!MainParam_SerialPort.IsOpen) MainParam_SerialPort.Open();
+        //    //            if (MainParam_SerialPort.IsOpen)
+        //    //            {
+        //    //                TextBlock_Status.Text = "COM port открыт (" + COMName + ")";
+        //    //                ComboBox_Interfaces.Items.Clear();
+        //    //                ComboBox_Interfaces.Items.Add(COMName);
+        //    //                ComboBox_Interfaces.SelectedIndex = 0;
+        //    //                //ComboBox_Interfaces.Background = new SolidColorBrush(Colors.LightGreen);
+        //    //                MainParam_DeviceName = LabDevice.SupportedDevices.HP53132A;
+        //    //            }
+        //    //        }
+        //    //    }
+        //    //    if (Properties.Settings.Default.LastConnectedDevice == LabDevice.SupportedDevices.UT71D.ToString())
+        //    //    {
+        //    //        DeviceList.Local.TryGetHidDevice(out MainParam_HIDDevice, vendorID: 6790, productID: 57352);
+        //    //        if (MainParam_HIDDevice == null) { TextBlock_Status.Text = "Ошибка доступа к HID устройству"; return; }
+        //    //        if (!MainParam_HIDDevice.TryOpen(out MainParam_HIDStream)) { TextBlock_Status.Text = "Ошибка получения потока чтения для HID устройства"; return; }
+        //    //        //byte[] InitialConfigStructure = new byte[] { 0x00, 0x09, 0x60, 0x00, 0x00, 0x03 };
+        //    //        byte[] InitialConfigStructure = new byte[] { 0x00, 0x4B, 0x00, 0x00, 0x00, 0x03 };
+        //    //        MainParam_HIDStream.SetFeature(InitialConfigStructure);
+        //    //        MainParam_HIDBuffer = new byte[11];
 
-            //        string z = MainParam_HIDDevice.DevicePath;
-            //        //MainParam_HIDStream.ReadAsync()
-            //        //MainParam_HIDStream.BeginRead(MainParam_HIDBuffer, 0, 11, new AsyncCallback(System_HIDStreamDataReceived), null);
-            //        Thread thread1 = new Thread(System_HIDStreamDataReceived);
-            //        thread1.Start();
-            //        TextBlock_Status.Text = "Успешное получения потока чтения для HID устройства";
+        //    //        string z = MainParam_HIDDevice.DevicePath;
+        //    //        //MainParam_HIDStream.ReadAsync()
+        //    //        //MainParam_HIDStream.BeginRead(MainParam_HIDBuffer, 0, 11, new AsyncCallback(System_HIDStreamDataReceived), null);
+        //    //        Thread thread1 = new Thread(System_HIDStreamDataReceived);
+        //    //        thread1.Start();
+        //    //        TextBlock_Status.Text = "Успешное получения потока чтения для HID устройства";
 
-            //        if (ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName()) == -1) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
-            //        ComboBox_Interfaces.SelectedIndex = ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName());
-            //        ComboBox_Devices.SelectedIndex = ComboBox_Devices.Items.IndexOf(LabDevice.SupportedDevices.UT71D.ToString());
+        //    //        if (ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName()) == -1) ComboBox_Interfaces.Items.Add(MainParam_HIDDevice.GetProductName());
+        //    //        ComboBox_Interfaces.SelectedIndex = ComboBox_Interfaces.Items.IndexOf(MainParam_HIDDevice.GetProductName());
+        //    //        ComboBox_Devices.SelectedIndex = ComboBox_Devices.Items.IndexOf(LabDevice.SupportedDevices.UT71D.ToString());
 
-            //        //ComboBox_Devices.Text = "asdsad";
-            //        //((ComboBoxItem)ComboBox_Devices.Items[ComboBox_Devices.SelectedIndex]).Content = new ComboBoxItem().Content="23123";
-            //        ComboBox_Devices.Background = new SolidColorBrush(Colors.LightGreen);
-            //        MainParam_DeviceName = LabDevice.SupportedDevices.UT71D;
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Properties.Settings.Default.LastConfig = "null";
-            //    Properties.Settings.Default.LastConnectedDevice = "null";
-            //    Properties.Settings.Default.Save();
-            //    TextBlock_Status.Text = "Ошибка подключения к COM порту "+ex.ToString().Take(50);
-            //    return;
-            //}
-            ////try
-            ////{
-            ////    //TextBlock_Status.Text = "Try connect to port " + Properties.Settings.Default.COMName;
-            ////    //if (MainParam_SerialPort.IsOpen) MainParam_SerialPort.Close();
+        //    //        //ComboBox_Devices.Text = "asdsad";
+        //    //        //((ComboBoxItem)ComboBox_Devices.Items[ComboBox_Devices.SelectedIndex]).Content = new ComboBoxItem().Content="23123";
+        //    //        ComboBox_Devices.Background = new SolidColorBrush(Colors.LightGreen);
+        //    //        MainParam_DeviceName = LabDevice.SupportedDevices.UT71D;
+        //    //    }
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    Properties.Settings.Default.LastConfig = "null";
+        //    //    Properties.Settings.Default.LastConnectedDevice = "null";
+        //    //    Properties.Settings.Default.Save();
+        //    //    TextBlock_Status.Text = "Ошибка подключения к COM порту "+ex.ToString().Take(50);
+        //    //    return;
+        //    //}
+        //    ////try
+        //    ////{
+        //    ////    //TextBlock_Status.Text = "Try connect to port " + Properties.Settings.Default.COMName;
+        //    ////    //if (MainParam_SerialPort.IsOpen) MainParam_SerialPort.Close();
 
-            ////    //MainParam_SerialPort.PortName = Properties.Settings.Default.COMName;
-            ////    //MainParam_SerialPort.Handshake = Handshake.None;
-            ////    //MainParam_SerialPort.Open();
+        //    ////    //MainParam_SerialPort.PortName = Properties.Settings.Default.COMName;
+        //    ////    //MainParam_SerialPort.Handshake = Handshake.None;
+        //    ////    //MainParam_SerialPort.Open();
 
-            ////    //if (MainParam_SerialPort.IsOpen)
-            ////    //{
-            ////    //    TextBlock_Status.Text = "COM port is open (" + Properties.Settings.Default.COMName + ")";
-            ////    //    Label_StatusCOM.Content = "Подключено " + Properties.Settings.Default.COMName + " " + Properties.Settings.Default.COMBaudrate.ToString() + "bps";
-            ////    //    Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGreen);
-            ////    //    ComboBox_COMPorts.SelectedValue = Properties.Settings.Default.COMName;
-            ////    //}
-            ////}
-            ////catch
-            ////{
-            ////    //TextBlock_Status.Text = "COM port connect error (" + Properties.Settings.Default.COMName + ")";
-            ////    //Label_StatusCOM.Content = "Не подключено";
-            ////    //Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGray);
-            ////}
-        }
+        //    ////    //if (MainParam_SerialPort.IsOpen)
+        //    ////    //{
+        //    ////    //    TextBlock_Status.Text = "COM port is open (" + Properties.Settings.Default.COMName + ")";
+        //    ////    //    Label_StatusCOM.Content = "Подключено " + Properties.Settings.Default.COMName + " " + Properties.Settings.Default.COMBaudrate.ToString() + "bps";
+        //    ////    //    Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGreen);
+        //    ////    //    ComboBox_COMPorts.SelectedValue = Properties.Settings.Default.COMName;
+        //    ////    //}
+        //    ////}
+        //    ////catch
+        //    ////{
+        //    ////    //TextBlock_Status.Text = "COM port connect error (" + Properties.Settings.Default.COMName + ")";
+        //    ////    //Label_StatusCOM.Content = "Не подключено";
+        //    ////    //Label_StatusCOM.Background = new SolidColorBrush(Colors.LightGray);
+        //    ////}
+        //}
 
-        void System_SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            SerialPort sp = sender as SerialPort;
+        //void System_SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
+        //{
+        //    SerialPort sp = sender as SerialPort;
 
-            try
-            {
-                string Buffer = sp.ReadExisting();
-                System_serialDataQueue.Enqueue(Buffer);
-            }
-            catch (TimeoutException ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-            this.Dispatcher.Invoke(() => System_SerialDataProcessing());
-        }
+        //    try
+        //    {
+        //        string Buffer = sp.ReadExisting();
+        //        System_serialDataQueue.Enqueue(Buffer);
+        //    }
+        //    catch (TimeoutException ex)
+        //    {
+        //        MessageBox.Show(ex.ToString());
+        //    }
+        //    this.Dispatcher.Invoke(() => System_SerialDataProcessing());
+        //}
 
-        void System_HIDStreamDataReceived()
-        {
-            try
-            {
-                while (true)
-                {
-                    MainParam_HIDBuffer = MainParam_HIDStream.Read();
-                    System_HIDDataQueue.Enqueue(MainParam_HIDBuffer);
-                    this.Dispatcher.Invoke(() => System_HIDStreamDataProcessing());
-                }
-            }
-            catch (Exception ex)
-            {
-                //MessageBox.Show(ex.ToString());
-                return;
-            }
-        }
+        //void System_HIDStreamDataReceived()
+        //{
+        //    try
+        //    {
+        //        while (true)
+        //        {
+        //            MainParam_HIDBuffer = MainParam_HIDStream.Read();
+        //            System_HIDDataQueue.Enqueue(MainParam_HIDBuffer);
+        //            this.Dispatcher.Invoke(() => System_HIDStreamDataProcessing());
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //MessageBox.Show(ex.ToString());
+        //        return;
+        //    }
+        //}
 
-        public void System_HIDStreamDataProcessing()
-        {
-            if (MainParam_DeviceName == LabDevice.SupportedDevices.UT71D)
-            {
-                byte[] LocalBuffer;
-                while (System_HIDDataQueue.TryDequeue(out LocalBuffer))
-                {
-                    decimal value;
-                    string valueRAW;
-                    LabDevice.DataTypes type;
-                    //if (Driver_UT71D.TryParceData(LocalBuffer, out value, out type, out valueRAW))
-                    //{
-                    //    //Debug.WriteLine(valueRAW, type.ToString());
-                    //    System_NewValue(value, type, valueRAW);
-                    //}
-                }
-            }
-        }
+        //public void System_HIDStreamDataProcessing()
+        //{
+        //    if (MainParam_DeviceName == LabDevice.SupportedDevices.UT71D)
+        //    {
+        //        byte[] LocalBuffer;
+        //        while (System_HIDDataQueue.TryDequeue(out LocalBuffer))
+        //        {
+        //            decimal value;
+        //            string valueRAW;
+        //            LabDevice.DataTypes type;
+        //            //if (Driver_UT71D.TryParceData(LocalBuffer, out value, out type, out valueRAW))
+        //            //{
+        //            //    //Debug.WriteLine(valueRAW, type.ToString());
+        //            //    System_NewValue(value, type, valueRAW);
+        //            //}
+        //        }
+        //    }
+        //}
 
-        public void System_SerialDataProcessing()
-        {
-            if (MainParam_DeviceName == LabDevice.SupportedDevices.HP53132A)
-            {
-                string LocalBuffer;
-                while (System_serialDataQueue.TryDequeue(out LocalBuffer))
-                {
-                    MainParam_InputBuffer += LocalBuffer;
-                    if (MainParam_InputBuffer.Contains("\r\n"))
-                    {
-                        decimal value;
-                        Driver_HP53132A.TryParceData(new string(MainParam_InputBuffer.Take(MainParam_InputBuffer.IndexOf('\n')).ToArray()), out value);
-                        System_NewValue(value, LabDevice.DataTypes.Voltage, new string(MainParam_InputBuffer.Replace("\r", "").Take(MainParam_InputBuffer.IndexOf('\n')).ToArray()));
-                        MainParam_InputBuffer = new string(MainParam_InputBuffer.Skip(MainParam_InputBuffer.IndexOf('\n') + 1).ToArray());
-                    }
-                }
-            }
-        }
+        //public void System_SerialDataProcessing()
+        //{
+        //    if (MainParam_DeviceName == LabDevice.SupportedDevices.HP53132A)
+        //    {
+        //        string LocalBuffer;
+        //        while (System_serialDataQueue.TryDequeue(out LocalBuffer))
+        //        {
+        //            MainParam_InputBuffer += LocalBuffer;
+        //            if (MainParam_InputBuffer.Contains("\r\n"))
+        //            {
+        //                decimal value;
+        //                Driver_HP53132A.TryParceData(new string(MainParam_InputBuffer.Take(MainParam_InputBuffer.IndexOf('\n')).ToArray()), out value);
+        //                System_NewValue(value, LabDevice.DataTypes.Voltage, new string(MainParam_InputBuffer.Replace("\r", "").Take(MainParam_InputBuffer.IndexOf('\n')).ToArray()));
+        //                MainParam_InputBuffer = new string(MainParam_InputBuffer.Skip(MainParam_InputBuffer.IndexOf('\n') + 1).ToArray());
+        //            }
+        //        }
+        //    }
+        //}
 
-        public void System_NewValue(decimal value, LabDevice.DataTypes type, string valueRAW = "")
-        {
-            if (!AcceptProccessData) return;
-            if (MainParam_DataType == LabDevice.DataTypes.Abstract)
-            {
-                MainParam_DataType = type;
-                RadioButton_FixedPoint_Click(null, null);
-            }
-            if (MainParam_DataType != type)
-            {
-                AcceptProccessData = false;
-                if (MessageBox.Show("Обнаружены данные другого типа, удалить предыдущие измерения?", "Изменился тип данных", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-                {
-                    AcceptProccessData = true;
-                    return;
-                }
-                else
-                {
-                    AcceptProccessData = true;
-                    MainParam_DataType = type;
-                    System_ClearAllData();
-                    return;
-                }
-            }
+        //public void System_NewValue(decimal value, LabDevice.DataTypes type, string valueRAW = "")
+        //{
+        //    if (!AcceptProccessData) return;
+        //    if (MainParam_DataType == LabDevice.DataTypes.Abstract)
+        //    {
+        //        MainParam_DataType = type;
+        //        RadioButton_FixedPoint_Click(null, null);
+        //    }
+        //    if (MainParam_DataType != type)
+        //    {
+        //        AcceptProccessData = false;
+        //        if (MessageBox.Show("Обнаружены данные другого типа, удалить предыдущие измерения?", "Изменился тип данных", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+        //        {
+        //            AcceptProccessData = true;
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            AcceptProccessData = true;
+        //            MainParam_DataType = type;
+        //            System_ClearAllData();
+        //            return;
+        //        }
+        //    }
 
-            //System_AddValueToGraph(value, type);
+        //    //System_AddValueToGraph(value, type);
 
-            if ((bool)RadioButton_FixedPoint.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertFixedPoint(value, type);
-            if ((bool)RadioButton_Scientific.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertScientific(value, type);
-            //TextBlock_CounterMeasure.Text = MainParam_CounterMeasure.ToString();
+        //    if ((bool)RadioButton_FixedPoint.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertFixedPoint(value, type);
+        //    if ((bool)RadioButton_Scientific.IsChecked) TextBlock_CurrentValue.Text = LabDevice.ConvertScientific(value, type);
+        //    //TextBlock_CounterMeasure.Text = MainParam_CounterMeasure.ToString();
 
-            //if (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()))
-            //    MainChartValues.RemoveAt(0) = (ChartValues<MeasureModel>)MainChartValues.Skip(MainChartValues.Count - int.Parse(((ComboBoxItem)ComboBox_SizeGraph.SelectedItem).Tag.ToString()));
+        //    //if (MainChartValues.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString()))
+        //    //    MainChartValues.RemoveAt(0) = (ChartValues<MeasureModel>)MainChartValues.Skip(MainChartValues.Count - int.Parse(((ComboBoxItem)ComboBox_SizeGraph.SelectedItem).Tag.ToString()));
 
-            MainParam_MillsBetweenMeasure.Add((int)DateTime.Now.Subtract(MainParam_PastMeasure).TotalMilliseconds);
-            MainParam_PastMeasure = DateTime.Now;
-            if (MainParam_MillsBetweenMeasure.Count > 10) MainParam_MillsBetweenMeasure.RemoveAt(0);
+        //    MainParam_MillsBetweenMeasure.Add((int)DateTime.Now.Subtract(MainParam_PastMeasure).TotalMilliseconds);
+        //    MainParam_PastMeasure = DateTime.Now;
+        //    if (MainParam_MillsBetweenMeasure.Count > 10) MainParam_MillsBetweenMeasure.RemoveAt(0);
 
-            //if (MainParam_CounterMeasure > 0 && MainParam_MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (MainParam_MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
+        //    //if (MainParam_CounterMeasure > 0 && MainParam_MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (MainParam_MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
 
-            if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
-            {
-                System_AddValueToFile(value, type, valueRAW);
+        //    if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
+        //    {
+        //        System_AddValueToFile(value, type, valueRAW);
 
-                if (MainParam_CounterMeasure_End == 0)
-                {
-                    ProgressBar_Status.Value = ((double)(DateTime.Now.Ticks - MainParam_TimeStartMeasure.Ticks) / (double)(MainParam_TimeEndMeasure.Ticks - MainParam_TimeStartMeasure.Ticks)) * 100;
-                    TextBlock_ETA.Text = "До окончания таймера: " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-                }
-                if (MainParam_CounterMeasure_End > 0)
-                {
-                    ProgressBar_Status.Value = ((double)(MainParam_CounterMeasure - MainParam_CounterMeasure_Start) / (double)(MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start)) * 100;
-                    TextBlock_ETA.Text = "Измерений осталось: " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure).ToString() +
-                        //" (ETA: "+ DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - (MainParam_CounterMeasure - MainParam_CounterMeasure_Start)) *(MainParam_SummTimeBetweenMeasure / (MainParam_CounterMeasure - MainParam_CounterMeasure_Start))).ToString("dd'.'hh':'mm':'ss");
-                        " (ETA: " + TimeSpan.FromMilliseconds(
-                            (MainParam_CounterMeasure_End - MainParam_CounterMeasure) *
-                            MainParam_MillsBetweenMeasure.Average()
-                            ).ToString(@"d\.hh\:mm\:ss") + ")";
-                    if (MainParam_CounterMeasure_End == MainParam_CounterMeasure)
-                    {
-                        Button_FileBurnStart_Click(null, null);
-                    }
-                }
-            }
-        }
+        //        if (MainParam_CounterMeasure_End == 0)
+        //        {
+        //            ProgressBar_Status.Value = ((double)(DateTime.Now.Ticks - MainParam_TimeStartMeasure.Ticks) / (double)(MainParam_TimeEndMeasure.Ticks - MainParam_TimeStartMeasure.Ticks)) * 100;
+        //            TextBlock_ETA.Text = "До окончания таймера: " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+        //        }
+        //        if (MainParam_CounterMeasure_End > 0)
+        //        {
+        //            ProgressBar_Status.Value = ((double)(MainParam_CounterMeasure - MainParam_CounterMeasure_Start) / (double)(MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start)) * 100;
+        //            TextBlock_ETA.Text = "Измерений осталось: " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure).ToString() +
+        //                //" (ETA: "+ DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - (MainParam_CounterMeasure - MainParam_CounterMeasure_Start)) *(MainParam_SummTimeBetweenMeasure / (MainParam_CounterMeasure - MainParam_CounterMeasure_Start))).ToString("dd'.'hh':'mm':'ss");
+        //                " (ETA: " + TimeSpan.FromMilliseconds(
+        //                    (MainParam_CounterMeasure_End - MainParam_CounterMeasure) *
+        //                    MainParam_MillsBetweenMeasure.Average()
+        //                    ).ToString(@"d\.hh\:mm\:ss") + ")";
+        //            if (MainParam_CounterMeasure_End == MainParam_CounterMeasure)
+        //            {
+        //                Button_FileBurnStart_Click(null, null);
+        //            }
+        //        }
+        //    }
+        //}
 
-        public void System_AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
-        {
-            string StringForBurnToFile = "";
-            //if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            //else
-            //{
-            //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
-            //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
-            //    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
-            //}
-            MainParam_StreamWriter.WriteLine(StringForBurnToFile);
-            try
-            {
-                if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
-                {
-                    MainParam_StreamWriter.Flush();
-                    if (MainParam_CounterMeasure_End == 0)
-                    {
-                        TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-                        //TextBlock_StatusBurn.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "\nОкончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
-                    }
-                    else
-                    {
-                        TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание в ~" + DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - MainParam_CounterMeasure) * MainParam_MillsBetweenMeasure.Average()).ToString("dd/MM/yyyy HH:mm:ss");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
-            }
+        //public void System_AddValueToFile(decimal value, LabDevice.DataTypes type, string valueRAW)
+        //{
+        //    string StringForBurnToFile = "";
+        //    //if (CheckBox_ValueOnly.IsChecked.Value) StringForBurnToFile = LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+        //    //else
+        //    //{
+        //    //    StringForBurnToFile += LabDevice.ConvertFixedPoint(value, type) + "\t" + LabDevice.ConvertScientific(value, LabDevice.DataTypes.Abstract);
+        //    //    StringForBurnToFile += "\t" + string.Format("{0:u}", DateTime.Now).Replace("Z", "") + ":" + string.Format("{0:d}", DateTime.Now.Millisecond);
+        //    //    if (valueRAW != "") StringForBurnToFile += "\t" + valueRAW;
+        //    //}
+        //    MainParam_StreamWriter.WriteLine(StringForBurnToFile);
+        //    try
+        //    {
+        //        if (MainParam_CounterMeasure % Slider_FragmentSize.Value == 0)
+        //        {
+        //            MainParam_StreamWriter.Flush();
+        //            if (MainParam_CounterMeasure_End == 0)
+        //            {
+        //                TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+        //                //TextBlock_StatusBurn.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "\nОкончание через " + (MainParam_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
+        //            }
+        //            else
+        //            {
+        //                TextBlock_Status.Text = "Записано значений " + (MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString() + "   Окончание в ~" + DateTime.Now.AddMilliseconds((MainParam_CounterMeasure_End - MainParam_CounterMeasure) * MainParam_MillsBetweenMeasure.Average()).ToString("dd/MM/yyyy HH:mm:ss");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TextBlock_Status.Text = "Ошибка записи " + ex.ToString();
+        //    }
 
-        }
+        //}
 
-        public void System_RefreshAllChart()
-        {
-            //List<MeasureModel> ListForAdding = new List<MeasureModel>();
-            //for (int i=0;i< MainParam_Values.Count; i+=2)
-            //{
-            //    MeasureModel a = new MeasureModel {
-            //        Label = i,
-            //        Value = (double)MainParam_Values[i]
-            //    };
-            //    ListForAdding.Add(a);
-            //}
-            //AllChartValues.Clear();
-            //AllChartValues.AddRange(ListForAdding);
-        }
+        //public void System_RefreshAllChart()
+        //{
+        //    //List<MeasureModel> ListForAdding = new List<MeasureModel>();
+        //    //for (int i=0;i< MainParam_Values.Count; i+=2)
+        //    //{
+        //    //    MeasureModel a = new MeasureModel {
+        //    //        Label = i,
+        //    //        Value = (double)MainParam_Values[i]
+        //    //    };
+        //    //    ListForAdding.Add(a);
+        //    //}
+        //    //AllChartValues.Clear();
+        //    //AllChartValues.AddRange(ListForAdding);
+        //}
 
-        public void System_ClearAllData()
-        {
-            //MainChartValues.Clear();
-            //MainChart.AxisX[0].Sections.Clear();
-            //MainChart.Update();
-            //MainParam_Values.Clear();
-            if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...") Button_FileBurnStart_Click(null, null);
-            MainParam_PastMeasure = DateTime.Now;
-            MainParam_CounterMeasure = 0;
-            MainParam_CounterMeasure_End = 0;
-            MainParam_CounterMeasure_Start = 0;
-            MainParam_MillsBetweenMeasure.Clear();
-        }
+        //public void System_ClearAllData()
+        //{
+        //    //MainChartValues.Clear();
+        //    //MainChart.AxisX[0].Sections.Clear();
+        //    //MainChart.Update();
+        //    //MainParam_Values.Clear();
+        //    if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...") Button_FileBurnStart_Click(null, null);
+        //    MainParam_PastMeasure = DateTime.Now;
+        //    MainParam_CounterMeasure = 0;
+        //    MainParam_CounterMeasure_End = 0;
+        //    MainParam_CounterMeasure_Start = 0;
+        //    MainParam_MillsBetweenMeasure.Clear();
+        //}
 
         public MainWindow()
         {
@@ -485,7 +493,9 @@ namespace LoggerDeviceValues
             AcceptProccessData = true;
             MainParam_MillsBetweenMeasure = new List<int>();
 
-            System_ConnectToDeviceFromAppSettings();
+            TextBox_FilePath.Text = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            //System_ConnectToDeviceFromAppSettings();
 
             //System_LogMessage("asdas sdfsdfdsfdsf d", 'R', 1);
 
@@ -531,18 +541,19 @@ namespace LoggerDeviceValues
             CheckBox_BurnStringChange(null, null);
         }
 
-        public delegate void EventNewValueDelegate(decimal Val, LabDevice.DataTypes Typ, DateTime TS, int IDSession);
+        public delegate void EventNewValueDelegate(DeviceManager.MeasureStruct measure, int IDSession);
 
-        public void EventNewValue(decimal Val, LabDevice.DataTypes Typ, DateTime TS, int IDSession)
+        public void EventNewValue(DeviceManager.MeasureStruct measure, int IDSession)
         {
-            if (TS != DateTime.MinValue)
+            if (measure.TS != DateTime.MinValue)
             {
-                System_AddValueToGraph(Val, Typ, TS, IDSession);
-                this.Dispatcher.Invoke(() => System_UpdateLifeInfo(TS, Val, Typ, IDSession));
+                System_AddValueToGraph(measure.Val, measure.Typ, measure.TS, IDSession);
+                this.Dispatcher.Invoke(() => System_UpdateLifeInfo(measure.TS, measure.Val, measure.Typ, IDSession));
+                if (GlobalState == StateMachine.Burning) this.Dispatcher.Invoke(() => System_AddDataToFile_Manager(measure, IDSession));
             }
             else
             {
-                this.Dispatcher.Invoke(() => System_UpdateLifeInfo(TS, IDSession: IDSession));
+                this.Dispatcher.Invoke(() => System_UpdateLifeInfo(measure.TS, IDSession: IDSession));
             }
         }
 
@@ -571,6 +582,12 @@ namespace LoggerDeviceValues
                 int currentIDSession = Int32.Parse(currentDevSession.Tag.ToString());
                 if (currentIDSession == IDSession) flagGenNewSession = false;
                 if (DeviceManager_Obj.Devices[currentIDSession].active) flagHaveActiveDev = true;
+                else if (!DeviceManager_Obj.Devices[currentIDSession].active && GlobalState == StateMachine.Burning && DeviceManager_Obj.Devices[currentIDSession].CounterMeasureForBurning != -1)
+                {
+                    Global_UserFileWriter[currentIDSession].WriteLine("Устройство перестало отвечать в " + DateTime.Now);
+                    Global_UserFileWriter[currentIDSession].Flush();
+                    DeviceManager_Obj.Devices[currentIDSession].CounterMeasureForBurning = -1;
+                }
                 if (currentIDSession == Global_SelectedDevice)
                 {
                     if (IDSession == Global_SelectedDevice)
@@ -585,7 +602,16 @@ namespace LoggerDeviceValues
                         //if (DeviceManager_Obj.Devices[Global_SelectedDevice].CounterMeasure > 0 && DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Sum() > 0) TextBlock_FreqMeasure.Text = (60 / (DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Average() / 1000)).ToString("F1") + " выб/мин";
                         //TextBlock_CounterMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[Global_SelectedDevice].Statistics_Max, Typ);
                     }
-                    if (DeviceManager_Obj.Devices[currentIDSession].active)
+                    if (IDSession != -1)
+                    {
+                        TextBlock_Statistics_Min.Text = "Min = " + LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].Statistics_Min, DeviceManager_Obj.Devices[currentIDSession].DataType);
+                        TextBlock_Statistics_Max.Text = "Max = " + LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].Statistics_Max, DeviceManager_Obj.Devices[currentIDSession].DataType);
+                        TextBlock_Statistics_Avr.Text = "Avr = " + LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].Statistics_Average, DeviceManager_Obj.Devices[currentIDSession].DataType);
+                        TextBlock_Statistics_RMS.Text = "RMS = " + LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].Statistics_RMS, DeviceManager_Obj.Devices[currentIDSession].DataType);
+                        TextBlock_Statistics_PtP.Text = "PtP = " + LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].Statistics_PeakToPeak, DeviceManager_Obj.Devices[currentIDSession].DataType);
+                        //TextBlock_Statistics_FreqMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].MillsBetweenMeasure, DeviceManager_Obj.Devices[currentIDSession].DataType);
+                    }
+                        if (DeviceManager_Obj.Devices[currentIDSession].active)
                     {
                         RadioButton_StartMeasure.IsEnabled = true;
                         RadioButton_PauseMeasure.IsEnabled = true;
@@ -611,6 +637,14 @@ namespace LoggerDeviceValues
                     }
                 }
                 currentDevSession.Content = " #" + currentIDSession + " " + DeviceManager_Obj.Devices[currentIDSession].DeviceName.ToString() + " " + DeviceManager_Obj.Devices[currentIDSession].DataType.ToString() + " ";
+                foreach (LineSeries currentSeries in MainChartModel.Series)
+                {
+                    if (currentSeries.Tag.ToString() == currentDevSession.Tag.ToString())
+                    {
+                        currentDevSession.Background = new SolidColorBrush(Color.FromArgb(currentSeries.ActualColor.A, currentSeries.ActualColor.R, currentSeries.ActualColor.G, currentSeries.ActualColor.B));
+                        break;
+                    }
+                }
             }
             if (flagGenNewSession && IDSession!=-1)
             {
@@ -625,6 +659,27 @@ namespace LoggerDeviceValues
             }
             if (!flagHaveActiveDev && GlobalState == StateMachine.HaveConectedDevice) GlobalState = StateMachine.NowNotConnectedDevice;
             if (flagHaveActiveDev && GlobalState == StateMachine.NowNotConnectedDevice) GlobalState = StateMachine.HaveConectedDevice;
+            if (GlobalState == StateMachine.Burning)
+            {
+                if (Global_CounterForAllDev > -1)
+                {
+                    ProgressBar_Status.Value = ((double)((int)IntegerUpDown_QtyMeas.Value - ((int)IntegerUpDown_QtyMeas.Value - Global_CounterForAllDev)) / (double)(IntegerUpDown_QtyMeas.Value)) * 100;
+                    TextBlock_ETA.Text = "Измерений осталось: " + ((int)IntegerUpDown_QtyMeas.Value - ((int)IntegerUpDown_QtyMeas.Value - Global_CounterForAllDev)).ToString();
+                    if (DeviceManager_Obj.Devices[Global_SelectedDevice].active && !DeviceManager_Obj.Devices[Global_SelectedDevice].ignore && 
+                        DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Count > 0)
+                    {
+                        TextBlock_ETA.Text += " (ETA: " + TimeSpan.FromMilliseconds(
+                            ((int)IntegerUpDown_QtyMeas.Value - ((int)IntegerUpDown_QtyMeas.Value - Global_CounterForAllDev)) *
+                            DeviceManager_Obj.Devices[Global_SelectedDevice].MillsBetweenMeasure.Average()
+                            ).ToString(@"d\.hh\:mm\:ss") + ")";
+                    }
+
+                    if (Global_CounterForAllDev == 0)
+                    {
+                        Button_FileBurnStart_Click(null, null);
+                    }
+                }
+            }
             UpdateBlockUI();
         }
 
@@ -680,9 +735,6 @@ namespace LoggerDeviceValues
                     CurrentSeries.StrokeThickness = 2;
                     MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MajorGridlineStyle = LineStyle.Solid;
                     MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MinorGridlineStyle = LineStyle.DashDotDot;
-                    MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MajorGridlineColor = CurrentSeries.ActualColor;
-                    MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).TitleColor = CurrentSeries.ActualColor;
-                    MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).TextColor = CurrentSeries.ActualColor;
                 }
                 else
                 {
@@ -690,19 +742,16 @@ namespace LoggerDeviceValues
                     CurrentSeries.StrokeThickness = 1;
                     MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MajorGridlineStyle = LineStyle.None;
                     MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MinorGridlineStyle = LineStyle.None;
-                    MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MajorGridlineColor = CurrentSeries.ActualColor;
-                    MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).TitleColor = CurrentSeries.ActualColor;
-                    MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).TextColor = CurrentSeries.ActualColor;
                 }
+                MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).MajorGridlineColor = CurrentSeries.ActualColor;
+                MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).TitleColor = CurrentSeries.ActualColor;
+                MainChartModel.GetAxis(CurrentSeries.Tag.ToString()).TextColor = CurrentSeries.ActualColor;
             }
             MainChart.InvalidatePlot();
         }
 
         public void System_AddSeriesToGraph(int IDSession)
         {
-            
-
-
             LinearAxis yAxis = new LinearAxis
             {
                 Key = IDSession.ToString(),
@@ -731,7 +780,7 @@ namespace LoggerDeviceValues
             ListView_CurrentDev.Items.Add(new ListBoxItem()
             {
                 Content = " #" + IDSession + " " + DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() + " " + DeviceManager_Obj.Devices[IDSession].DataType.ToString() + " ",
-                Background = new SolidColorBrush(Colors.Transparent),
+                //Background = new SolidColorBrush(Colors.Red),
                 Tag = IDSession.ToString(),
                 //IsChecked = true,
             });
@@ -913,11 +962,14 @@ namespace LoggerDeviceValues
 
         public void System_LogMessage(String _text, char type, int IDSession)
         {
+            string text="";
+            if (IDSession > -1) text = "#" + IDSession.ToString() + " " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " " + _text;
+            else text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " " + _text;
             SolidColorBrush newcolor = new SolidColorBrush(Colors.Transparent);
             if (type == 'R') newcolor = new SolidColorBrush(Colors.LightPink);
             ListBox_Log.Items.Add(new ListBoxItem()
             {
-                Content = "#" + IDSession.ToString() + " " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " " + _text,
+                Content = text,
                 Tag = type+ IDSession.ToString(),
                 Background = newcolor,
             });
@@ -939,8 +991,22 @@ namespace LoggerDeviceValues
                     }
                     if (type == 'R')
                     {
-                        DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
-                        ListBox_Log.Items.Remove(CurrentItem);
+                        if (MessageBox.Show("Устройство "+ DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() + 
+                            " перестало присылать данные. Автоматически сегенерирована новая сессия для новых данные с этого прибора. Сохранить текущую сессию №"
+                            + IDSession.ToString() + " с " + DeviceManager_Obj.Devices[IDSession].CounterMeasure.ToString() + " измерениями в файл?", 
+                            "Прибор перестал присылать данные", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                        {
+                            Global_SelectedDevice = IDSession;
+                            RadioButton_ChangeAciveDevice_Checked(null, null);
+                            Button_SaveCurrentData_Click(null, null);
+                            DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
+                            ListBox_Log.Items.Remove(CurrentItem);
+                        }
+                        else
+                        {
+                            DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
+                            ListBox_Log.Items.Remove(CurrentItem);
+                        }
                         break;
                     }
                 }
@@ -1058,8 +1124,45 @@ namespace LoggerDeviceValues
                     }
                     break;
                 }
+            }   
+        }
+
+        private void System_AddDataToFile_Manager(DeviceManager.MeasureStruct measure, int IDSession)
+        {
+            LabDevice currentdev = DeviceManager_Obj.Devices[IDSession];
+
+            if (!Global_UserFileWriter.ContainsKey(IDSession))
+            {
+                string FileName = TextBox_FilePath.Text + "\\LoggerDevice S" + IDSession.ToString() + " " +
+                        DateTime.Now.ToString("dd.MM.yyyy HH-mm-ss") + " " + DeviceManager_Obj.Devices[IDSession].DeviceName.ToString();
+                FileName += (bool)RadioButton_BurnTXT.IsChecked ? ".txt" : ".csv";
+                Global_UserFileWriter.Add(IDSession, File.CreateText(FileName));
+
+                Global_UserFileWriter[IDSession].WriteLine("Начало сохранения измерений в " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+                Global_UserFileWriter[IDSession].WriteLine("Название устройства " + currentdev.DeviceName.ToString());
+                Global_UserFileWriter[IDSession].WriteLine("Тип данных " + currentdev.DataType.ToString());
+                if (currentdev.MillsBetweenMeasure.Count>0) Global_UserFileWriter[IDSession].WriteLine("Среднее время между измеренийми " + currentdev.MillsBetweenMeasure.Average().ToString() + " мс.");
+                Global_UserFileWriter[IDSession].Flush();
+                Global_UserFileWriter[IDSession].AutoFlush = false;
+                System_LogMessage("Начата запись в файл '" + "LoggerDevice S" + IDSession.ToString() + " " +
+                        DateTime.Now.ToString("dd.MM.yyyy HH-mm-ss") + " " + DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() + ((bool)RadioButton_BurnTXT.IsChecked ? ".txt" : ".csv") + "'", 'I', IDSession);
             }
-            
+
+            string delemiter = (bool)RadioButton_BurnTXT.IsChecked ? " " : ";";
+
+            string StringForBurnToFile = LabDevice.ConvertScientific(measure.Val, LabDevice.DataTypes.Abstract);
+            if (CheckBox_BurnFixedPoint.IsChecked.Value) StringForBurnToFile += delemiter + LabDevice.ConvertFixedPoint(measure.Val, measure.Typ);
+            if (CheckBox_BurnCounter.IsChecked.Value) StringForBurnToFile += delemiter + currentdev.CounterMeasureForBurning.ToString();//(MainParam_CounterMeasure - MainParam_CounterMeasure_Start).ToString();
+            if (CheckBox_BurnDate.IsChecked.Value) StringForBurnToFile += delemiter + measure.TS.ToString("dd.MM.yyyy");
+            if (CheckBox_BurnTime.IsChecked.Value) StringForBurnToFile += delemiter + measure.TS.ToString("HH:mm:ss:") + string.Format("{0:d}", DateTime.Now.Millisecond);
+            if (CheckBox_BurnRAW.IsChecked.Value) StringForBurnToFile += delemiter + measure.RAW;
+
+            currentdev.CounterMeasureForBurning++;
+            Global_CounterForAllDev--;
+
+            Global_UserFileWriter[IDSession].WriteLine(StringForBurnToFile);
+                
+            Global_UserFileWriter[IDSession].Flush();
         }
 
         private void Button_SetPathFile_Click(object sender, RoutedEventArgs e)
@@ -1071,125 +1174,77 @@ namespace LoggerDeviceValues
 
         private void Button_FileBurnStart_Click(object sender, RoutedEventArgs e)
         {
-            GlobalState = StateMachine.Burning;
-            UpdateBlockUI();
-            TabItem_CurrentMeasurment.IsSelected = true;
-            Button_FileBurnStart.Content = "ЗАПИСЬ...";
-            Button_FileBurnStart.Background = new SolidColorBrush(Colors.OrangeRed);
+            if (GlobalState == StateMachine.HaveConectedDevice)
+            {
+                GlobalState = StateMachine.Burning;
+                UpdateBlockUI();
+                TabItem_CurrentMeasurment.IsSelected = true;
+                Button_FileBurnStart.Content = "ЗАПИСЬ...";
+                Button_FileBurnStart.Background = new SolidColorBrush(Colors.OrangeRed);
+                if ((bool)RadioButton_QtyMeas.IsChecked) Global_CounterForAllDev = (int)IntegerUpDown_QtyMeas.Value;
+                if ((bool)RadioButton_Timer.IsChecked)
+                {
+                    Global_CounterForAllDev = -1;
+                    if (Global_Timer != null) Global_Timer.Stop();
+                    Global_Timer = new DispatcherTimer();
+                    Global_Timer.Interval = TimeSpan.FromSeconds(1);//TimeSpanUpDown_Timer.Value.Value;
+                    Global_Timer.Start();
+                    Global_Timer.Tick += MainParam_Timer_Tick;
+                    Global_TimeEndMeasure = DateTime.Now.AddSeconds(TimeSpanUpDown_Timer.Value.Value.TotalSeconds);
+                }
 
-            //if (Button_FileBurnStart.Content.ToString() == "ЗАПИСЬ...")
-            //{
-            //    Button_FileBurnStart.Content = "Начать запись";
-            //    Button_FileBurnStart.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(221, 221, 221));
+                var annotation = new LineAnnotation();
+                annotation.Color = OxyColors.Green;
+                annotation.X = DateTimeAxis.ToDouble(DateTime.Now);
+                annotation.LineStyle = LineStyle.LongDashDot;
+                annotation.StrokeThickness = 3;
+                annotation.Type = LineAnnotationType.Vertical;
+                MainChartModel.Annotations.Add(annotation);
 
-            //    RadioButton_FixedPoint.IsEnabled = true;
-            //    RadioButton_Scientific.IsEnabled = true;
-            //    RadioButton_QtyMeas.IsEnabled = true;
-            //    RadioButton_Timer.IsEnabled = true;
-            //    //TextBox_FilePos.IsEnabled = true;
-            //    //Button_GenerateNewNameFile.IsEnabled = true;
-            //    //Button_SetPathFile.IsEnabled = true;
-            //    //CheckBox_ValueOnly.IsEnabled = true;
-            //    //TextBox_FragmentSize.IsEnabled = true;
+                System_LogMessage("Начата запись с всех активных устройств", 'I', -1);
+                return;
+            }
+            if (GlobalState == StateMachine.Burning)
+            {
+                GlobalState = StateMachine.HaveConectedDevice;
+                UpdateBlockUI();
+                RadioButton_QtyMeas_Checked(null, null);
+                System_UpdateLifeInfo(DateTime.MaxValue, IDSession: Global_SelectedDevice);
+                TabItem_CurrentMeasurment.IsSelected = true;
+                Button_FileBurnStart.Content = "Начать запись";
+                ProgressBar_Status.Value = 0;
+                TextBlock_ETA.Text = "Время/Измерения до окончания";
+                Button_FileBurnStart.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(221, 221, 221));
+                if (Global_Timer!=null) Global_Timer.Stop();
+                Global_CounterForAllDev = -1;
 
-            //    MainParam_CounterMeasure_End = MainParam_CounterMeasure;
-            //    //MainChart.AxisX[0].Sections.Add(new AxisSection
-            //    //{
-            //    //    Value = MainParam_CounterMeasure_End,
-            //    //    StrokeThickness = 3,
-            //    //    Stroke = new SolidColorBrush(Color.FromRgb(220, 30, 30)),
-            //    //    DataLabel = true,
-            //    //});
+                var annotation = new LineAnnotation();
+                annotation.Color = OxyColors.Red;
+                annotation.X = DateTimeAxis.ToDouble(DateTime.Now);
+                annotation.LineStyle = LineStyle.LongDashDot;
+                annotation.StrokeThickness = 3;
+                annotation.Type = LineAnnotationType.Vertical;
+                MainChartModel.Annotations.Add(annotation);
 
-            //    TextBlock_Status.Text = "Запись окончена в " + DateTime.Now.ToString("HH:mm") +
-            //        "    Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " Значений";
-
-            //    MainParam_StreamWriter.WriteLine("Окончание записи " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") +
-            //        ". Записано " + (MainParam_CounterMeasure_End - MainParam_CounterMeasure_Start).ToString() + " значений.");
-            //    MainParam_StreamWriter.WriteLine("");
-            //    MainParam_StreamWriter.Flush();
-
-            //    ProgressBar_Status.Value = 0;
-            //    TextBlock_ETA.Text = "";
-            //    return;
-            //}
-            //if (Button_FileBurnStart.Content.ToString() == "Начать запись")
-            //{
-            //    try
-            //    {
-            //        //string filepath;
-            //        //if (TextBox_FileName.Text.Contains("\\")) filepath = TextBox_FileName.Text;
-            //        //else filepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + TextBox_FileName.Text;
-            //        //if (MainParam_StreamWriter != null) MainParam_StreamWriter.Close();
-            //        //if (File.Exists(filepath))
-            //        //{
-            //        //    if (MessageBox.Show("Файл " + filepath + " уже существует, дописать?", "Запись в файл", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            //        //    {
-            //        //        MainParam_StreamWriter = File.AppendText(filepath);
-            //        //    }
-            //        //    else return;
-            //        //}
-            //        //else
-            //        //{
-            //        //    MainParam_StreamWriter = File.CreateText(filepath);
-            //        //}
-            //        MainParam_StreamWriter.WriteLine("Старт записи измерений " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
-            //        MainParam_StreamWriter.WriteLine("Название устройства " + MainParam_DeviceName.ToString());
-            //        MainParam_StreamWriter.WriteLine("Тип данных " + MainParam_DataType.ToString());
-            //        MainParam_StreamWriter.Flush();
-            //        MainParam_StreamWriter.AutoFlush = false;
-
-            //        Button_FileBurnStart.Content = "ЗАПИСЬ...";
-            //        Button_FileBurnStart.Background = new SolidColorBrush(Colors.OrangeRed);
-            //        RadioButton_FixedPoint.IsEnabled = false;
-            //        RadioButton_Scientific.IsEnabled = false;
-            //        RadioButton_QtyMeas.IsEnabled = false;
-            //        RadioButton_Timer.IsEnabled = false;
-            //        //TextBox_FilePos.IsEnabled = false;
-            //        //Button_GenerateNewNameFile.IsEnabled = false;
-            //        //Button_SetPathFile.IsEnabled = false;
-            //        //CheckBox_ValueOnly.IsEnabled = false;
-            //        //TextBox_FragmentSize.IsEnabled = false;
-
-            //        MainParam_CounterMeasure_Start = MainParam_CounterMeasure;
-            //        MainParam_TimeStartMeasure = DateTime.Now;
-            //        ////MainChart.AxisX[0].Sections.Add(new AxisSection
-            //        ////{
-            //        ////    Value = MainParam_CounterMeasure_Start,
-            //        ////    StrokeThickness = 3,
-            //        ////    Stroke = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 213, 72)),
-            //        ////    DataLabel = true,
-            //        ////});
-
-            //        TextBlock_Status.Text = "Запись начата в " + DateTime.Now.ToString("HH:mm");
-
-            //        if ((bool)RadioButton_Timer.IsChecked)
-            //        {
-            //            MainParam_CounterMeasure_End = 0;
-            //            if (MainParam_Timer != null) MainParam_Timer.Stop();
-            //            MainParam_Timer = new DispatcherTimer();
-
-            //            MainParam_Timer.Interval = TimeSpanUpDown_Timer.Value.Value;
-            //            MainParam_Timer.Start();
-            //            MainParam_Timer.Tick += MainParam_Timer_Tick;
-            //            MainParam_TimeEndMeasure = DateTime.Now.AddSeconds(TimeSpanUpDown_Timer.Value.Value.TotalSeconds);
-            //        }
-            //        if ((bool)RadioButton_QtyMeas.IsChecked)
-            //        {
-            //            MainParam_CounterMeasure_End = MainParam_CounterMeasure + (int)IntegerUpDown_QtyMeas.Value;
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        MessageBox.Show(ex.ToString());
-            //    }
-            //}
-
-            ////MainParam_SummTimeBetweenMeasure = 0;
-            //MainParam_PastMeasure = DateTime.Now;
+                foreach (int streamID in Global_UserFileWriter.Keys)
+                {
+                    Global_UserFileWriter[streamID].WriteLine("Завершение записи в " + DateTime.Now);
+                    Global_UserFileWriter[streamID].Flush();
+                    Global_UserFileWriter[streamID].Close();
+                    System_LogMessage("Файл для сессии " + streamID + " успешно закрыт", 'I', streamID);
+                }
+                Global_UserFileWriter.Clear();
+                return;
+            }
         }
 
+        private void MainParam_Timer_Tick(object s, EventArgs e)
+        {
+                ProgressBar_Status.Value = ((double)(DateTime.Now.Ticks - Global_TimeStartMeasure.Ticks) / (double)(Global_TimeEndMeasure.Ticks - Global_TimeStartMeasure.Ticks)) * 100;
+                TextBlock_ETA.Text = "До окончания записи: " + (Global_TimeEndMeasure - DateTime.Now).ToString("dd'.'hh':'mm':'ss");
 
+            if (Global_TimeEndMeasure < DateTime.Now) Button_FileBurnStart_Click(null, null);
+        }
 
 
 
@@ -1239,8 +1294,8 @@ namespace LoggerDeviceValues
                     Button_SaveCurrentData.IsEnabled = true;
                     RadioButton_QtyMeas.IsEnabled = true;
                     RadioButton_Timer.IsEnabled = true;
-                    TimeSpanUpDown_Timer.IsEnabled = true;
-                    IntegerUpDown_QtyMeas.IsEnabled = true;
+                    //TimeSpanUpDown_Timer.IsEnabled = true;
+                    //IntegerUpDown_QtyMeas.IsEnabled = true;
                     TabItem_Settings.IsEnabled = true;
                     break;
                 case StateMachine.BurningFileCurrentDevice:
@@ -1248,8 +1303,8 @@ namespace LoggerDeviceValues
                     Button_SaveCurrentData.IsEnabled = false;
                     RadioButton_QtyMeas.IsEnabled = true;
                     RadioButton_Timer.IsEnabled = true;
-                    TimeSpanUpDown_Timer.IsEnabled = true;
-                    IntegerUpDown_QtyMeas.IsEnabled = true;
+                    //TimeSpanUpDown_Timer.IsEnabled = true;
+                    //IntegerUpDown_QtyMeas.IsEnabled = true;
                     TabItem_Settings.IsEnabled = true;
                     break;
                 case StateMachine.Burning:
@@ -1259,6 +1314,9 @@ namespace LoggerDeviceValues
                     TimeSpanUpDown_Timer.IsEnabled = false;
                     IntegerUpDown_QtyMeas.IsEnabled = false;
                     TabItem_Settings.IsEnabled = false;
+                    RadioButton_StartMeasure.IsEnabled = false;
+                    RadioButton_PauseMeasure.IsEnabled = false;
+                    Button_DisableDriver.IsEnabled = false;
                     break;
             }
         }
@@ -1345,11 +1403,6 @@ namespace LoggerDeviceValues
             e.Handled = regex.IsMatch(e.Text);
         }
 
-        private void MainParam_Timer_Tick(object s, EventArgs e)
-        {
-            Button_FileBurnStart_Click(null, null);
-        }
-
         //private void MainChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         //{
         //    MainChart.AxisX[0].MinValue = double.NaN;
@@ -1358,7 +1411,7 @@ namespace LoggerDeviceValues
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            System_RefreshAllChart();
+            //System_RefreshAllChart();
         }
 
 

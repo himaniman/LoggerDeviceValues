@@ -63,7 +63,6 @@ D:\GitSynFolder\LoggerDeviceValues\obj\Debug\MainWindow.baml
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.g.resources
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.Properties.Resources.resources
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.GenerateResource.cache
-D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CoreCompileInputs.cache
 D:\GitSynFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.csproj.CopyComplete
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\OxyPlot.Wpf.dll
@@ -77,3 +76,7 @@ Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.xml
 Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.dll
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.xml
+D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml

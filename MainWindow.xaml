@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
-        Title="Logger Device Values v0.3 filename" Height="660" Width="900" Background="White" Closing="Window_Shutdown">
+        Title="Logger Device Values v0.3 filename" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
     <Window.Resources>
         <Canvas x:Key="Work" Width="28" Height="15">
             <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
@@ -102,7 +102,7 @@
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Сообщения" Margin="5,5,5,5">
-                            <ListView Name="ListBox_Log" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Margin="5,5,5,5" Height="auto" MinHeight="80" MaxHeight="270">
+                            <ListView Name="ListBox_Log" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Margin="5,5,5,5" Height="auto" MinHeight="80" MaxHeight="220">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <DockPanel>
@@ -142,11 +142,14 @@
                             </ListView.ItemContainerStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
                                         <RadioButton Name="RadioButton_ChangeAciveDevice"  GroupName="Devices" 
-                                                     Content="{Binding Path=Content}" Background="{Binding Path=Background}" 
+                                                     Content="{Binding Path=Content}" Background="{Binding Path=Background}"
                                                      IsChecked="{Binding Path=IsSelected}" Tag="{Binding Path=Tag}" Checked="RadioButton_ChangeAciveDevice_Checked">
                                         </RadioButton>
+                                        <Canvas Width="10" Height="10">
+                                            <Path Width="10" Height="10" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="{Binding Path=Background}" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
+                                        </Canvas>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -232,22 +235,15 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="1" Name="TextBlock_CurrentValue" Text="Текущее значение" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18"/>
-                            <ComboBox Grid.Row="1" Grid.Column="0" Name="ComboBox_SizeGraph" SelectedIndex="0" HorizontalContentAlignment="Center">
-                                <ComboBoxItem Content="6" Tag="6"/>
-                                <ComboBoxItem Content="150" Tag="150"/>
-                                <ComboBoxItem Content="1K" Tag="1000"/>
-                                <ComboBoxItem Content="5K" Tag="5000"/>
-                                <ComboBoxItem Content="∞" Tag="1"/>
-                            </ComboBox>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Макс. выборок на графике" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Получено значений" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            
-                            <TextBlock Grid.Row="2" Grid.Column="2" Text="Частота измерений" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Name="TextBlock_Statistics_Min" Text="Минимум" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Name="TextBlock_Statistics_Max" Text="Максимум" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Name="TextBlock_Statistics_Avr" Text="Среднее" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Name="TextBlock_Statistics_RMS" Text="RMS" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="2" Name="TextBlock_Statistics_PtP" Text="Пик - пик" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </Grid>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Статистика">
+                <TabItem Header="Статистика (в разработке)">
                     <StackPanel>
                         <TextBlock Name="TextBlock_Statistics_FreqMeasure" Text="Выборок/минуту" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         <TextBlock Name="TextBlock_Statistics_CounterMeasure" Text="Максимум" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -309,16 +305,20 @@
                                     </WrapPanel>
                                 </DockPanel>
                             </GroupBox>
-                            <GroupBox Header="Период принудительной записи в файл" Margin="5,0,5,0">
-                                <DockPanel>
-                                    <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="Каждые Х выборок принудительно записывать в файл" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
-                                    <Slider DockPanel.Dock="Left" Name="Slider_FragmentSize" Margin="5,0,5,0" Minimum="10" Maximum="400" Value="50" IsSnapToTickEnabled="True" Ticks="10,50,100,200,400" AutoToolTipPlacement="TopLeft" LargeChange="100" TickPlacement="BottomRight"/>
-                                </DockPanel>
+                            <GroupBox Header="Настройки отображения графика текущих значений" Margin="5,0,5,0">
+                                <ComboBox Grid.Row="1" Grid.Column="0" Name="ComboBox_SizeGraph" SelectedIndex="0" HorizontalContentAlignment="Center">
+                                    <ComboBoxItem Content="6" Tag="6"/>
+                                    <ComboBoxItem Content="150" Tag="150"/>
+                                    <ComboBoxItem Content="1K" Tag="1000"/>
+                                    <ComboBoxItem Content="5K" Tag="5000"/>
+                                    <ComboBoxItem Content="∞" Tag="1"/>
+                                </ComboBox>
                             </GroupBox>
                             <GroupBox Header="Формат отображения текущих значений" Margin="5,0,5,0">
                                 <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <RadioButton Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
                                     <RadioButton Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
+                                    
                                 </WrapPanel>
                             </GroupBox>
                             <GroupBox Header="Усреднение частоты получения данных" Margin="5,0,5,0">
@@ -334,6 +334,10 @@
                                         <TextBox Margin="10,5,10,5" Name="TextBox_FilePath" Text="Дириктория для сохранения данных"/>
                                     </DockPanel>
                                     <TextBlock Margin="10,0,10,5" DockPanel.Dock="Bottom" Text="В данную папку будут сохранены файлы при нажатии кнопки 'Начать запись'. Файлы будут названы автоматически." TextWrapping="Wrap"/>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="Каждые Х выборок принудительно записывать в файл" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
+                                        <Slider DockPanel.Dock="Left" Name="Slider_FragmentSize" Margin="5,0,5,0" Minimum="10" Maximum="400" Value="50" IsSnapToTickEnabled="True" Ticks="10,50,100,200,400" AutoToolTipPlacement="TopLeft" LargeChange="100" TickPlacement="BottomRight"/>
+                                    </DockPanel>
                                     <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_BurnTXT" Content="Формат файла TXT" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби"/>
                                         <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_BurnCSV" Content="Формат файла CSV" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби"/>
