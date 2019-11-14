@@ -80,3 +80,7 @@ D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.xml
 D:\GitSynFolder\LoggerDeviceValues\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LoggerDeviceValues.exe.manifest
+Q:\GitSynchFolder\LoggerDeviceValues\bin\Debug\LoggerDeviceValues.application
+Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.exe.manifest
+Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.application

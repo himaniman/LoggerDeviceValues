@@ -547,7 +547,7 @@ namespace LoggerDeviceValues
         {
             if (measure.TS != DateTime.MinValue)
             {
-                System_AddValueToGraph(measure.Val, measure.Typ, measure.TS, IDSession);
+                this.Dispatcher.Invoke(() => System_AddValueToGraph(measure.Val, measure.Typ, measure.TS, IDSession));
                 this.Dispatcher.Invoke(() => System_UpdateLifeInfo(measure.TS, measure.Val, measure.Typ, IDSession));
                 if (GlobalState == StateMachine.Burning) this.Dispatcher.Invoke(() => System_AddDataToFile_Manager(measure, IDSession));
             }
@@ -693,7 +693,7 @@ namespace LoggerDeviceValues
                     if (time != DateTime.MinValue)
                     {
                         CurrentSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(time), (double)value));
-                        while (CurrentSeries.Points.Count > 150) CurrentSeries.Points.RemoveAt(0);
+                        while (CurrentSeries.Points.Count > int.Parse(((ComboBoxItem)(ComboBox_SizeGraph.SelectedItem)).Tag.ToString())) CurrentSeries.Points.RemoveAt(0);
                         MainChartModel.GetAxis(IDSession.ToString()).Title = type.ToString();
                         //CurrentSeries.YAxis.Title = type.ToString();
                     }
@@ -1270,7 +1270,9 @@ namespace LoggerDeviceValues
 
         private void Button_DisableDriver_Click(object sender, RoutedEventArgs e)
         {
-
+            DeviceManager_Obj.RemoveAndDisonnectDevice(Global_SelectedDevice);
+            ListBox_Log.Items.Remove(Global_SelectedDevice);
+            RadioButton_ChangeAciveDevice_Checked(null, null);
         }
 
 

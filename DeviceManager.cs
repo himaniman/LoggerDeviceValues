@@ -119,9 +119,9 @@ namespace LoggerDeviceValues
                         }
                     }
                 }
-                foreach (int i in Devices.Keys.ToArray())
+                try
                 {
-                    if (Devices.ContainsKey(i))
+                    foreach (int i in Devices.Keys.ToArray())
                     {
                         if (Devices[i].active)
                         {
@@ -131,7 +131,7 @@ namespace LoggerDeviceValues
                             {
                                 if (Devices[i].PastMeasure +
                                     (TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) > TimeSpan.FromSeconds(2) ?
-                                    TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) : TimeSpan.FromSeconds(2)) 
+                                    TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) : TimeSpan.FromSeconds(2))
                                     < DateTime.Now)
                                 {
                                     int NewIDSession = 1;
@@ -141,7 +141,7 @@ namespace LoggerDeviceValues
                                     Devices[i].IDTargetDriver = -1;
                                     Devices[i].active = false;
 
-                                    MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue}, i);
+                                    MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue }, i);
 
                                     break;
                                     //else
@@ -160,6 +160,10 @@ namespace LoggerDeviceValues
                             }
                         }
                     }
+                }
+                catch
+                {
+
                 }
                     //for (int i = 0; i < Devices.Count; i++)
                     //{
@@ -192,7 +196,10 @@ namespace LoggerDeviceValues
             }
             else if (Devices[IDSession].active == true && Devices[IDSession].IDTargetDriver > -1)
             {
-
+                foreach (Driver_VirtualDevice driver in Drivers_VirtualDevice) if (Devices[IDSession].IDTargetDriver == driver.DriverID) driver.Disconnect();
+                foreach (Driver_UT71D driver in Drivers_UT71D) if (Devices[IDSession].IDTargetDriver == driver.DriverID) driver.Disconnect();
+                Devices.Remove(IDSession);
+                MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue }, -1);
             }
         }
 

@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
-        Title="Logger Device Values v0.3 filename" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
+        Title="Мультиаппаратный логгер данных v0.45" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
     <Window.Resources>
         <Canvas x:Key="Work" Width="28" Height="15">
             <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
@@ -129,7 +129,7 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="85"/>
                         </Grid.RowDefinitions>
-                        <ListView Grid.Row="0" Name="ListView_CurrentDev" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" Margin="10,5,10,5">
+                        <ListView Grid.Row="0" Name="ListView_CurrentDev" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" Margin="10,5,10,5" ToolTip="Текущие сессии">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"/>
@@ -305,45 +305,50 @@
                                     </WrapPanel>
                                 </DockPanel>
                             </GroupBox>
-                            <GroupBox Header="Настройки отображения графика текущих значений" Margin="5,0,5,0">
-                                <ComboBox Grid.Row="1" Grid.Column="0" Name="ComboBox_SizeGraph" SelectedIndex="0" HorizontalContentAlignment="Center">
-                                    <ComboBoxItem Content="6" Tag="6"/>
-                                    <ComboBoxItem Content="150" Tag="150"/>
-                                    <ComboBoxItem Content="1K" Tag="1000"/>
-                                    <ComboBoxItem Content="5K" Tag="5000"/>
-                                    <ComboBoxItem Content="∞" Tag="1"/>
-                                </ComboBox>
-                            </GroupBox>
-                            <GroupBox Header="Формат отображения текущих значений" Margin="5,0,5,0">
-                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <RadioButton Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
-                                    <RadioButton Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
-                                    
-                                </WrapPanel>
-                            </GroupBox>
-                            <GroupBox Header="Усреднение частоты получения данных" Margin="5,0,5,0">
-                                <DockPanel>
-                                    <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="По Х выборкам усредняется частота получаемых значений" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
-                                    <Slider DockPanel.Dock="Left" Name="Slider_MeanPointFreq" Margin="5,0,5,0" Value="10" Minimum="1" Maximum="400" IsSnapToTickEnabled="True" Ticks="1,10,50,200,400" TickPlacement="BottomRight" AutoToolTipPlacement="TopLeft"/>
-                                </DockPanel>
-                            </GroupBox>
                             <GroupBox Grid.Row="5" Margin="5,5,5,5" Header="Настройки сохранения в файл">
                                 <StackPanel>
                                     <DockPanel>
                                         <Button DockPanel.Dock="Right" Name="Button_SetPathFile" Margin="10,5,10,5" Width="150" Content="Указать путь" Click="Button_SetPathFile_Click"/>
                                         <TextBox Margin="10,5,10,5" Name="TextBox_FilePath" Text="Дириктория для сохранения данных"/>
                                     </DockPanel>
-                                    <TextBlock Margin="10,0,10,5" DockPanel.Dock="Bottom" Text="В данную папку будут сохранены файлы при нажатии кнопки 'Начать запись'. Файлы будут названы автоматически." TextWrapping="Wrap"/>
-                                    <DockPanel>
-                                        <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="Каждые Х выборок принудительно записывать в файл" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
+                                    <TextBlock Margin="10,0,10,5" DockPanel.Dock="Bottom" FontSize="9" Text="В данную папку будут сохранены файлы при нажатии кнопки 'Начать запись'. Файлы будут названы автоматически. Каждая сессия будет сохранена в отдельный файл." TextWrapping="Wrap"/>
+                                    <DockPanel Margin="0,5,0,5">
+                                        <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="Количество выборок через которое будет происходить принудительная запись в файл" TextWrapping="Wrap" FontSize="9" Width="188" VerticalAlignment="Center"/>
                                         <Slider DockPanel.Dock="Left" Name="Slider_FragmentSize" Margin="5,0,5,0" Minimum="10" Maximum="400" Value="50" IsSnapToTickEnabled="True" Ticks="10,50,100,200,400" AutoToolTipPlacement="TopLeft" LargeChange="100" TickPlacement="BottomRight"/>
                                     </DockPanel>
-                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
                                         <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_BurnTXT" Content="Формат файла TXT" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби"/>
                                         <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_BurnCSV" Content="Формат файла CSV" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </GroupBox>
+                            <GroupBox Header="Настройки отображения данных в реальном времени" Margin="5,0,5,0">
+                                <StackPanel Orientation="Vertical">
+                                    <DockPanel>
+                                        <ComboBox DockPanel.Dock="Right" Name="ComboBox_SizeGraph" SelectedIndex="0" HorizontalContentAlignment="Center" Width="70">
+                                            <ComboBoxItem Content="200" Tag="200"/>
+                                            <ComboBoxItem Content="1K" Tag="1000"/>
+                                            <ComboBoxItem Content="5K" Tag="5000"/>
+                                            <ComboBoxItem Content="∞" Tag="2147483647"/>
+                                        </ComboBox>
+                                        <TextBlock DockPanel.Dock="Left" Margin="5,0,5,0" VerticalAlignment="Center" FontSize="9" Text="Ограниечеие количества выборок на графике в реальном времени" TextWrapping="Wrap"/>
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="False">
+                                            <RadioButton Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
+                                            <RadioButton Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
+                                        </WrapPanel>
+                                        <TextBlock DockPanel.Dock="Left" Margin="5,0,5,0" VerticalAlignment="Center" FontSize="9" Text="Отображение текущих значений" TextWrapping="Wrap"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </GroupBox>
+                            <GroupBox Header="Усреднение частоты получения данных" Margin="5,0,5,0" IsEnabled="False">
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Margin="5,0,5,0" Text="По Х выборкам усредняется частота получаемых значений" TextWrapping="Wrap" FontSize="9" Width="170" VerticalAlignment="Center"/>
+                                    <Slider DockPanel.Dock="Left" Name="Slider_MeanPointFreq" Margin="5,0,5,0" Value="10" Minimum="1" Maximum="400" IsSnapToTickEnabled="True" Ticks="1,10,50,200,400" TickPlacement="BottomRight" AutoToolTipPlacement="TopLeft"/>
+                                </DockPanel>
+                            </GroupBox>
+                            
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
