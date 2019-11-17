@@ -198,7 +198,7 @@ namespace LoggerDeviceValues
             {
                 foreach (Driver_VirtualDevice driver in Drivers_VirtualDevice) if (Devices[IDSession].IDTargetDriver == driver.DriverID) driver.Disconnect();
                 foreach (Driver_UT71D driver in Drivers_UT71D) if (Devices[IDSession].IDTargetDriver == driver.DriverID) driver.Disconnect();
-                Devices.Remove(IDSession);
+                //Devices.Remove(IDSession);
                 MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue }, -1);
             }
         }

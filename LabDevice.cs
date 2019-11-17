@@ -88,9 +88,9 @@ namespace LoggerDeviceValues
 
             if (CounterMeasure==0)
             {
-                //testbench
+                ////testbench
                 //Random rnd = new Random();
-                //int max = 10000000;
+                //int max = 1000000;
                 //for (int i = 0; i < max; i++)
                 //{
                 //    DeviceManager.MeasureStruct meas = new DeviceManager.MeasureStruct();

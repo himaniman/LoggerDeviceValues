@@ -89,8 +89,8 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_QtyMeas" GroupName="TimerOrQty" Style="{StaticResource {x:Type ToggleButton}}" Margin="5,5,5,5" Content="Кол-во измерений" Checked="RadioButton_QtyMeas_Checked"/>
-                                <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_Timer" GroupName="TimerOrQty" Style="{StaticResource {x:Type ToggleButton}}" Margin="5,5,5,5" Content="Таймер" IsChecked="True" Checked="RadioButton_Timer_Checked"/>
+                                <RadioButton Grid.Row="0" Grid.Column="0" Name="RadioButton_QtyMeas" GroupName="TimerOrQty" Style="{StaticResource {x:Type ToggleButton}}" Margin="5,5,5,5" Content="Кол-во измерений" Click="RadioButton_TimerOrQtyGroup_Change"/>
+                                <RadioButton Grid.Row="0" Grid.Column="1" Name="RadioButton_Timer" GroupName="TimerOrQty" Style="{StaticResource {x:Type ToggleButton}}" Margin="5,5,5,5" Content="Таймер" IsChecked="True" Click="RadioButton_TimerOrQtyGroup_Change"/>
                                 <xctk:IntegerUpDown Grid.Row="1" Grid.Column="0" Name="IntegerUpDown_QtyMeas" Value="100" Margin="5,5,5,5" Minimum="2" IsEnabled="False"/>
                                 <!--<TextBox Grid.Row="1" Grid.Column="0" Name="TextBox_QtyMeas" Text="100" Margin="5,5,5,5" TextAlignment="Left" MaxLength="10" PreviewTextInput="TextBox_QtyMeas_PreviewTextInput" IsEnabled="False"/>-->
                                 <!--<xctk:DateTimePicker Grid.Row="7" Grid.Column="0" Name="DateTimePicker_deadline" Margin="10,10,5,10" AllowTextInput="False" Format="Custom" TimeFormat="LongTime" FormatString="dd/MM HH:mm" IsEnabled="False"/>-->
@@ -125,7 +125,8 @@
                     <Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
-                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="32"/>
+                            <RowDefinition Height="32"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="85"/>
                         </Grid.RowDefinitions>
@@ -159,7 +160,7 @@
                                     <Button Margin="5,5,5,5" Content="#1 [V] UT70D"/>
                                 </StackPanel>
                             </ScrollViewer>-->
-                        <Grid Grid.Row="1" Margin="10,10,10,10">
+                        <Grid Grid.Row="1" Margin="10,10,10,2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
@@ -177,7 +178,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Пауза   "/>
                                     <Canvas x:Name="appbar_pause" Width="16" Height="16">
-                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#AAFFF000" Data="F1 M 26.9167,23.75L 33.25,23.75L 33.25,52.25L 26.9167,52.25L 26.9167,23.75 Z M 42.75,23.75L 49.0833,23.75L 49.0833,52.25L 42.75,52.25L 42.75,23.75 Z " RenderTransformOrigin="0.5,0.5"/>
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#FFEEE000" Data="F1 M 26.9167,23.75L 33.25,23.75L 33.25,52.25L 26.9167,52.25L 26.9167,23.75 Z M 42.75,23.75L 49.0833,23.75L 49.0833,52.25L 42.75,52.25L 42.75,23.75 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
@@ -185,13 +186,55 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Отлючить устройство   "/>
                                     <Canvas x:Name="appbar_close" Width="16" Height="16">
-                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#FFFF0000" Data="F1 M 26.9166,22.1667L 37.9999,33.25L 49.0832,22.1668L 53.8332,26.9168L 42.7499,38L 53.8332,49.0834L 49.0833,53.8334L 37.9999,42.75L 26.9166,53.8334L 22.1666,49.0833L 33.25,38L 22.1667,26.9167L 26.9166,22.1667 Z " RenderTransformOrigin="0.5,0.5"/>
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="DarkRed" Data="F1 M 27.6073,29.8464L 20.4825,22.7216C 19.8641,22.1033 19.8641,21.1008 20.4825,20.4825C 
+                                              21.1008,19.8641 22.1033,19.8641 22.7216,20.4825L 29.8464,27.6073C 34.1877,24.3526 40.3735,24.6993 44.3217,28.6475L 28.6475,44.3217C 24.6993,40.3735 
+                                              24.3526,34.1877 27.6073,29.8464 Z M 47.7483,32.0742C 51.6965,36.0223 52.0433,42.2082 48.7885,46.5494L 55.5175,53.2784C 56.1358,53.8967 
+                                              56.1358,54.8992 55.5175,55.5175C 54.8992,56.1359 53.8967,56.1359 53.2783,55.5175L 46.5494,48.7886C 42.2081,52.0433 36.0223,51.6965 
+                                              32.0741,47.7484L 35.4329,44.3896L 32.6339,41.5906C 31.7064,40.6631 31.7064,39.1594 32.6339,38.2319C 33.5614,37.3044 35.0652,37.3044 35.9927,38.2319L 
+                                              38.7916,41.0308L 41.0308,38.7917L 38.2319,35.9927C 37.3044,35.0652 37.3044,33.5614 38.2319,32.634C 39.1594,31.7065 40.6631,31.7065 41.5906,32.6339L 
+                                              44.3896,35.4329L 47.7483,32.0742 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
                                 </StackPanel>
                             </Button>
                             <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
                         </Grid>
-                        <oxy:PlotView Grid.Row="2" Name="MainChart" Model="{Binding MainChartModel}" />
+                        <Grid Grid.Row="2" Margin="10,2,10,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Name="Button_ConfigDevice" IsEnabled="False" Click="Button_ConfigDevice_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Настроить устройство   "/>
+                                    <Canvas x:Name="appbar_cog" Width="16" Height="16">
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#FF11AAFF" Data="F1 M 27.5314,21.8628L 33.0126,19.4224L 34.7616,23.3507C 36.6693,22.9269 38.6044,22.8903 
+                                              40.4668,23.2026L 42.0083,19.1868L 47.6098,21.337L 46.0683,25.3528C 47.6612,26.3669 49.0747,27.6889 50.2088,29.2803L 54.1371,27.5313L 56.5776,33.0126L 
+                                              52.6493,34.7616C 53.0731,36.6693 53.1097,38.6043 52.7974,40.4668L 56.8131,42.0083L 54.6629,47.6097L 50.6472,46.0683C 49.6331,47.6613 48.3111,49.0748 
+                                              46.7197,50.2089L 48.4686,54.1372L 42.9874,56.5776L 41.2384,52.6493C 39.3307,53.0731 37.3957,53.1097 35.5333,52.7974L 33.9918,56.8131L 28.3903,54.6629L 
+                                              29.9318,50.6472C 28.3388,49.6331 26.9252,48.3111 25.7911,46.7196L 21.8628,48.4686L 19.4224,42.9873L 23.3507,41.2383C 22.9269,39.3307 22.8903,37.3957 
+                                              23.2026,35.5332L 19.1869,33.9918L 21.3371,28.3903L 25.3528,29.9318C 26.3669,28.3388 27.6889,26.9252 29.2804,25.7911L 27.5314,21.8628 Z M 
+                                              34.3394,29.7781C 29.7985,31.7998 27.7564,37.1198 29.7781,41.6606C 31.7998,46.2015 37.1198,48.2436 41.6606,46.2219C 46.2015,44.2002 48.2436,38.8802 
+                                              46.2219,34.3394C 44.2002,29.7985 38.8802,27.7564 34.3394,29.7781 Z " RenderTransformOrigin="0.5,0.5"/>
+                                    </Canvas>
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="1" Name="Button_RemoveData" IsEnabled="False" Click="Button_RemoveData_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Удалить данные   "/>
+                                    <Canvas Width="16" Height="16">
+                                        <Path Width="12" Height="16" Stretch="Fill" Fill="OrangeRed" Data="F1 M 25.3333,23.75L 50.6667,23.75C 51.5411,23.75 51.8541,27.3125 51.8541,27.3125L 
+                                              24.1458,27.3125C 24.1458,27.3125 24.4589,23.75 25.3333,23.75 Z M 35.625,19.7917L 40.375,19.7917C 40.8122,19.7917 41.9583,20.9378 41.9583,21.375C 
+                                              41.9583,21.8122 40.8122,22.9584 40.375,22.9584L 35.625,22.9584C 35.1878,22.9584 34.0416,21.8122 34.0416,21.375C 34.0416,20.9378 35.1878,19.7917 
+                                              35.625,19.7917 Z M 27.7083,28.5L 48.2916,28.5C 49.1661,28.5 49.875,29.2089 49.875,30.0834L 48.2916,53.8334C 48.2916,54.7078 47.5828,55.4167 
+                                              46.7083,55.4167L 29.2917,55.4167C 28.4172,55.4167 27.7083,54.7078 27.7083,53.8334L 26.125,30.0834C 26.125,29.2089 26.8339,28.5 27.7083,28.5 Z M 
+                                              30.0833,31.6667L 30.4792,52.25L 33.25,52.25L 32.8542,31.6667L 30.0833,31.6667 Z M 36.4167,31.6667L 36.4167,52.25L 39.5833,52.25L 39.5833,31.6667L 
+                                              36.4167,31.6667 Z M 43.1458,31.6667L 42.75,52.25L 45.5208,52.25L 45.9167,31.6667L 43.1458,31.6667 Z " RenderTransformOrigin="0.5,0.5"/>
+                                    </Canvas>
+                                </StackPanel>
+                            </Button>
+                            <!--<Button Grid.Column="0" Name="Button_StartMeasure" Margin="10,10,10,10" Content="фыв"/>-->
+                        </Grid>
+                        <oxy:PlotView Grid.Row="3" Name="MainChart" Model="{Binding MainChartModel}" />
                         <!--<lvc:CartesianChart Grid.Row="1" Name="MainChart" Zoom="X" DisableAnimations="True" Hoverable="True" MouseDoubleClick="MainChart_MouseDoubleClick">
                             --><!--<lvc:CartesianChart.Series>
                                 <geared:GLineSeries Values="{Binding MainChartValues}" Title=""
@@ -222,8 +265,8 @@
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                         </lvc:CartesianChart>-->
-                        <TextBlock Grid.Row="2" Name="TextBlock_DataNotComing" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Visible"/>
-                        <Grid Grid.Row="3">
+                        <TextBlock Grid.Row="3" Name="TextBlock_DataNotComing" Text="Данные не поступают" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,30,0,0" Background="#7FFF0000" Padding="5" FontSize="16" Visibility="Visible"/>
+                        <Grid Grid.Row="4">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="30"/>
                                 <RowDefinition Height="26"/>
@@ -247,7 +290,6 @@
                     <StackPanel>
                         <TextBlock Name="TextBlock_Statistics_FreqMeasure" Text="Выборок/минуту" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         <TextBlock Name="TextBlock_Statistics_CounterMeasure" Text="Максимум" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <Button Content="Button" Click="Button_Click"/>
                     </StackPanel>
                     <!--<Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
@@ -335,8 +377,8 @@
                                     </DockPanel>
                                     <DockPanel>
                                         <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="False">
-                                            <RadioButton Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
-                                            <RadioButton Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби" Click="RadioButton_FixedPoint_Click"/>
+                                            <RadioButton Name="RadioButton_FixedPoint" GroupName="TypeString" Content="Плавающая точка" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Тип разделителя в дроби"/>
+                                            <RadioButton Name="RadioButton_Scientific" GroupName="TypeString" Content="Экспоненциальный" Margin="5,5,5,5" VerticalAlignment="Center" IsChecked="True" ToolTip="Тип разделителя в дроби"/>
                                         </WrapPanel>
                                         <TextBlock DockPanel.Dock="Left" Margin="5,0,5,0" VerticalAlignment="Center" FontSize="9" Text="Отображение текущих значений" TextWrapping="Wrap"/>
                                     </DockPanel>

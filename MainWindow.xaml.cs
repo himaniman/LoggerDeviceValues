@@ -105,6 +105,7 @@ namespace LoggerDeviceValues
         int Global_CounterForAllDev = -1;
 
         Dictionary<int, StreamWriter> Global_UserFileWriter = new Dictionary<int, StreamWriter>();
+        private static ManualResetEvent Global_EventControl1 = new ManualResetEvent(false);
 
         DispatcherTimer Global_Timer;
         DateTime Global_TimeEndMeasure;
@@ -611,17 +612,21 @@ namespace LoggerDeviceValues
                         TextBlock_Statistics_PtP.Text = "PtP = " + LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].Statistics_PeakToPeak, DeviceManager_Obj.Devices[currentIDSession].DataType);
                         //TextBlock_Statistics_FreqMeasure.Text = LabDevice.ConvertFixedPoint(DeviceManager_Obj.Devices[currentIDSession].MillsBetweenMeasure, DeviceManager_Obj.Devices[currentIDSession].DataType);
                     }
-                        if (DeviceManager_Obj.Devices[currentIDSession].active)
+                    if (DeviceManager_Obj.Devices[currentIDSession].active)
                     {
                         RadioButton_StartMeasure.IsEnabled = true;
                         RadioButton_PauseMeasure.IsEnabled = true;
                         TextBlock_DataNotComing.Visibility = Visibility.Hidden;
+                        Button_RemoveData.IsEnabled = false;
+                        Button_ConfigDevice.IsEnabled = true;
                     }
                     else
                     {
                         RadioButton_StartMeasure.IsEnabled = false;
                         RadioButton_PauseMeasure.IsEnabled = false;
                         TextBlock_DataNotComing.Visibility = Visibility.Visible;
+                        Button_RemoveData.IsEnabled = true;
+                        Button_ConfigDevice.IsEnabled = false;
                     }
                     if (DeviceManager_Obj.Devices[currentIDSession].IDTargetDriver > -1) Button_DisableDriver.IsEnabled = true;
                     else Button_DisableDriver.IsEnabled = false;
@@ -991,20 +996,27 @@ namespace LoggerDeviceValues
                     }
                     if (type == 'R')
                     {
-                        if (MessageBox.Show("Устройство "+ DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() + 
-                            " перестало присылать данные. Автоматически сегенерирована новая сессия для новых данные с этого прибора. Сохранить текущую сессию №"
-                            + IDSession.ToString() + " с " + DeviceManager_Obj.Devices[IDSession].CounterMeasure.ToString() + " измерениями в файл?", 
-                            "Прибор перестал присылать данные", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                        if (DeviceManager_Obj.Devices.ContainsKey(IDSession))
                         {
-                            Global_SelectedDevice = IDSession;
-                            RadioButton_ChangeAciveDevice_Checked(null, null);
-                            Button_SaveCurrentData_Click(null, null);
-                            DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
-                            ListBox_Log.Items.Remove(CurrentItem);
+                            if (MessageBox.Show("Устройство " + DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() +
+                                " перестало присылать данные. Автоматически сегенерирована новая сессия для новых данные с этого прибора. Сохранить текущую сессию №"
+                                + IDSession.ToString() + " с " + DeviceManager_Obj.Devices[IDSession].CounterMeasure.ToString() + " измерениями в файл?",
+                                "Прибор перестал присылать данные", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                            {
+                                Global_SelectedDevice = IDSession;
+                                RadioButton_ChangeAciveDevice_Checked(null, null);
+                                Button_SaveCurrentData_Click(null, null);
+                                //DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
+                                ListBox_Log.Items.Remove(CurrentItem);
+                            }
+                            else
+                            {
+                                //DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
+                                ListBox_Log.Items.Remove(CurrentItem);
+                            }
                         }
                         else
                         {
-                            DeviceManager_Obj.RemoveAndDisonnectDevice(IDSession);
                             ListBox_Log.Items.Remove(CurrentItem);
                         }
                         break;
@@ -1208,7 +1220,7 @@ namespace LoggerDeviceValues
             {
                 GlobalState = StateMachine.HaveConectedDevice;
                 UpdateBlockUI();
-                RadioButton_QtyMeas_Checked(null, null);
+                RadioButton_TimerOrQtyGroup_Change(null, null);
                 System_UpdateLifeInfo(DateTime.MaxValue, IDSession: Global_SelectedDevice);
                 TabItem_CurrentMeasurment.IsSelected = true;
                 Button_FileBurnStart.Content = "Начать запись";
@@ -1275,6 +1287,16 @@ namespace LoggerDeviceValues
             RadioButton_ChangeAciveDevice_Checked(null, null);
         }
 
+        private void Button_RemoveData_Click(object sender, RoutedEventArgs e)
+        {
+            if (DeviceManager_Obj.Devices[Global_SelectedDevice].active == false)
+            {
+                DeviceManager_Obj.RemoveAndDisonnectDevice(Global_SelectedDevice);
+                ListBox_Log.Items.Remove(Global_SelectedDevice);
+                RadioButton_ChangeAciveDevice_Checked(null, null);
+            }
+        }
+
 
 
 
@@ -1308,6 +1330,7 @@ namespace LoggerDeviceValues
                     //TimeSpanUpDown_Timer.IsEnabled = true;
                     //IntegerUpDown_QtyMeas.IsEnabled = true;
                     TabItem_Settings.IsEnabled = true;
+                    Button_RemoveData.IsEnabled = false;
                     break;
                 case StateMachine.Burning:
                     Button_SaveCurrentData.IsEnabled = false;
@@ -1319,6 +1342,7 @@ namespace LoggerDeviceValues
                     RadioButton_StartMeasure.IsEnabled = false;
                     RadioButton_PauseMeasure.IsEnabled = false;
                     Button_DisableDriver.IsEnabled = false;
+                    Button_RemoveData.IsEnabled = false;
                     break;
             }
         }
@@ -1338,37 +1362,7 @@ namespace LoggerDeviceValues
             TextBlock_BurnString.Text = StringForBurnToFile;
         }
 
-
-
-
-
-
-
-
-
-
-        private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)
-        {
-            //TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
-        }
-
-        
-
-        private void RadioButton_FixedPoint_Click(object sender, RoutedEventArgs e)
-        {
-
-            if ((bool)RadioButton_Scientific.IsChecked) YFormatter = value => LabDevice.ConvertScientific((decimal)value, MainParam_DataType);
-            if ((bool)RadioButton_FixedPoint.IsChecked) YFormatter = value => LabDevice.ConvertFixedPoint((decimal)value, MainParam_DataType);
-            //if (MainChart.AxisY.Count>0) MainChart.AxisY[0].LabelFormatter = YFormatter;
-        }
-
-        private void TextBox_FragmentSize_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
-        }
-
-        private void RadioButton_QtyMeas_Checked(object sender, RoutedEventArgs e)
+        private void RadioButton_TimerOrQtyGroup_Change(object sender, RoutedEventArgs e)
         {
             if ((bool)RadioButton_QtyMeas.IsChecked)
             {
@@ -1382,39 +1376,85 @@ namespace LoggerDeviceValues
             }
         }
 
-        private void RadioButton_Timer_Checked(object sender, RoutedEventArgs e)
+
+        private void Button_ConfigDevice_Click(object sender, RoutedEventArgs e)
         {
-            if (IntegerUpDown_QtyMeas != null)
-            {
-                if ((bool)RadioButton_QtyMeas.IsChecked)
-                {
-                    IntegerUpDown_QtyMeas.IsEnabled = true;
-                    TimeSpanUpDown_Timer.IsEnabled = false;
-                }
-                if ((bool)RadioButton_Timer.IsChecked)
-                {
-                    IntegerUpDown_QtyMeas.IsEnabled = false;
-                    TimeSpanUpDown_Timer.IsEnabled = true;
-                }
-            }
+
         }
 
-        private void TextBox_QtyMeas_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
-        }
+
+
+
+
+
+
+
+
+
+
+        //private void Button_GenerateNewNameFile_Click(object sender, RoutedEventArgs e)
+        //{
+        //    //TextBox_FileName.Text = "Logger_Measure_" + Properties.Settings.Default.LastConnectedDevice + " " + DateTime.Now.ToString("dd/MM/yyyy HH-mm-ss") + ".txt";
+        //}
+
+        
+
+        //private void RadioButton_FixedPoint_Click(object sender, RoutedEventArgs e)
+        //{
+
+        //    if ((bool)RadioButton_Scientific.IsChecked) YFormatter = value => LabDevice.ConvertScientific((decimal)value, MainParam_DataType);
+        //    if ((bool)RadioButton_FixedPoint.IsChecked) YFormatter = value => LabDevice.ConvertFixedPoint((decimal)value, MainParam_DataType);
+        //    //if (MainChart.AxisY.Count>0) MainChart.AxisY[0].LabelFormatter = YFormatter;
+        //}
+
+        //private void TextBox_FragmentSize_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        //{
+        //    Regex regex = new Regex("[^0-9]+");
+        //    e.Handled = regex.IsMatch(e.Text);
+        //}
+
+        //private void RadioButton_QtyMeas_Checked(object sender, RoutedEventArgs e)
+        //{
+        //    if ((bool)RadioButton_QtyMeas.IsChecked)
+        //    {
+        //        IntegerUpDown_QtyMeas.IsEnabled = true;
+        //        TimeSpanUpDown_Timer.IsEnabled = false;
+        //    }
+        //    if ((bool)RadioButton_Timer.IsChecked)
+        //    {
+        //        IntegerUpDown_QtyMeas.IsEnabled = false;
+        //        TimeSpanUpDown_Timer.IsEnabled = true;
+        //    }
+        //}
+
+        //private void RadioButton_Timer_Checked(object sender, RoutedEventArgs e)
+        //{
+        //    if (IntegerUpDown_QtyMeas != null)
+        //    {
+        //        if ((bool)RadioButton_QtyMeas.IsChecked)
+        //        {
+        //            IntegerUpDown_QtyMeas.IsEnabled = true;
+        //            TimeSpanUpDown_Timer.IsEnabled = false;
+        //        }
+        //        if ((bool)RadioButton_Timer.IsChecked)
+        //        {
+        //            IntegerUpDown_QtyMeas.IsEnabled = false;
+        //            TimeSpanUpDown_Timer.IsEnabled = true;
+        //        }
+        //    }
+        //}
+
+        //private void TextBox_QtyMeas_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        //{
+        //    Regex regex = new Regex("[^0-9]+");
+        //    e.Handled = regex.IsMatch(e.Text);
+        //}
 
         //private void MainChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         //{
         //    MainChart.AxisX[0].MinValue = double.NaN;
         //    MainChart.AxisX[0].MaxValue = double.NaN;
         //}
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            //System_RefreshAllChart();
-        }
 
 
 
@@ -1430,6 +1470,8 @@ namespace LoggerDeviceValues
             //}
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
+
+
 
 
 
