@@ -127,7 +127,7 @@ namespace LoggerDeviceValues
                         {
                             //случай если была пауза продилась как 3 раза * стандартное значение задержки между данными
                             //то значит надо создать новый лаб девайс чтобы новые данные если прийдут то лягут туды
-                            if (Devices[i].MillsBetweenMeasure.Count >= 10 && !Devices[i].ignore)
+                            if (Devices[i].MillsBetweenMeasure.Count >= 10  && !Devices[i].ignore)
                             {
                                 if (Devices[i].PastMeasure +
                                     (TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) > TimeSpan.FromSeconds(2) ?
@@ -158,27 +158,29 @@ namespace LoggerDeviceValues
                                     //}
                                 }
                             }
+                            if (Devices[i].PastMeasure + TimeSpan.FromSeconds(10) < DateTime.Now && Devices[i].PastMeasure != DateTime.MinValue)
+                                Devices[i].MillsBetweenMeasure.Add(1);
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    Debug.WriteLine(ex.ToString());
                 }
-                    //for (int i = 0; i < Devices.Count; i++)
-                    //{
-                    //    if (!Devices.ElementAt(i).Value.QueueNewValues.IsEmpty)
-                    //    {
-                    //        LabDevice.MeasureStruct measure;
-                    //        Devices.ElementAt(i).Value.QueueNewValues.TryDequeue(out measure);
-                    //        if (measure.Typ != Devices.ElementAt(i).Value.DataType)
-                    //        {
-                    //            Devices.Add(Devices.Keys.Max() + 1, new LabDevice(Devices.ElementAt(i).Value, measure.Typ));
-                    //            break;
-                    //        }
-                    //        else DelegateForNewValue(measure, Devices.ElementAt(i).Value);
-                    //    }
-                    //}
+                //for (int i = 0; i < Devices.Count; i++)
+                //{
+                //    if (!Devices.ElementAt(i).Value.QueueNewValues.IsEmpty)
+                //    {
+                //        LabDevice.MeasureStruct measure;
+                //        Devices.ElementAt(i).Value.QueueNewValues.TryDequeue(out measure);
+                //        if (measure.Typ != Devices.ElementAt(i).Value.DataType)
+                //        {
+                //            Devices.Add(Devices.Keys.Max() + 1, new LabDevice(Devices.ElementAt(i).Value, measure.Typ));
+                //            break;
+                //        }
+                //        else DelegateForNewValue(measure, Devices.ElementAt(i).Value);
+                //    }
+                //}
                 //}
                 //catch (Exception ex)
                 //{
@@ -196,8 +198,8 @@ namespace LoggerDeviceValues
             }
             else if (Devices[IDSession].active == true && Devices[IDSession].IDTargetDriver > -1)
             {
-                foreach (Driver_VirtualDevice driver in Drivers_VirtualDevice) if (Devices[IDSession].IDTargetDriver == driver.DriverID) driver.Disconnect();
-                foreach (Driver_UT71D driver in Drivers_UT71D) if (Devices[IDSession].IDTargetDriver == driver.DriverID) driver.Disconnect();
+                foreach (Driver_VirtualDevice driver in Drivers_VirtualDevice) if (Devices[IDSession].IDTargetDriver == driver.DriverID) { driver.Disconnect(); Drivers_VirtualDevice.Remove(driver); break; }
+                foreach (Driver_UT71D driver in Drivers_UT71D) if (Devices[IDSession].IDTargetDriver == driver.DriverID) { driver.Disconnect(); Drivers_UT71D.Remove(driver); break; }
                 //Devices.Remove(IDSession);
                 MainWindowEventNewValue(new MeasureStruct { Val = 0, Typ = 0, TS = DateTime.MinValue }, -1);
             }

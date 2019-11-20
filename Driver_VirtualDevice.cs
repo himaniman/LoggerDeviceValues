@@ -14,6 +14,11 @@ namespace LoggerDeviceValues
         //DeviceManager.NewValueDelegate DelegateForNewValue;
         ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
         public int DriverID;
+        public bool ModeConvertOm2C = false;
+        public double CoefA = 1;
+        public double CoefB = 1;
+        public double CoefC = 1;
+
         public Driver_VirtualDevice(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
         {
             QueueNewValues = _QueueNewValuesGlobal;
@@ -50,18 +55,26 @@ namespace LoggerDeviceValues
             while (true)
             {
                 Thread.Sleep(del);
-                counterForDisable--;
-                if (counterForDisable < 25 && counterForDisable > 5)
-                {
-                    type = LabDevice.DataTypes.Abstract;
-                    continue;
-                }
+                //counterForDisable--;
+                //if (counterForDisable < 25 && counterForDisable > 5)
+                //{
+                //    type = LabDevice.DataTypes.Abstract;
+                //    continue;
+                //}
                 //if (counterForDisable == 0) break;
 
                 value = ((decimal)Math.Sin(((double)DateTime.Now.Ticks + ofs*100000) / (63700* ofs)) * (decimal)Math.Pow(10,mul)) + (decimal)(ofs * Math.Pow(10, mul)); //(decimal)rnd.Next(10, 50)/10;
-                
-                if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
-                if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
+
+                if (type == LabDevice.DataTypes.Abstract) type = LabDevice.DataTypes.Resistance;
+                //if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
+                //if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
+
+                if (type == LabDevice.DataTypes.Resistance && ModeConvertOm2C == true)
+                {
+                    value = ((decimal)(1 / (CoefA + CoefB * Math.Log((double)value) + CoefC * Math.Pow(Math.Log((double)value), 3))) - 32) * ((decimal)5/(decimal)9);
+                    type = LabDevice.DataTypes.Temperature;
+                }
+                if (ModeConvertOm2C == false) type = LabDevice.DataTypes.Resistance;
 
                 //type = LabDevice.DataTypes.Voltage;
                 //this.Dispatcher.Invoke(() => DelegateForNewValue(value));
@@ -71,6 +84,19 @@ namespace LoggerDeviceValues
                 //защищенный вызов лаб девайса
                 
             }
+        }
+
+        public void EnableConversionOm2C(double _A, double _B, double _C)
+        {
+            CoefA = _A;
+            CoefB = _B;
+            CoefC = _C;
+            ModeConvertOm2C = true;
+        }
+
+        public void DisableConversionOm2C()
+        {
+            ModeConvertOm2C = false;
         }
     }
 }

@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("start.ico")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("ut71d.png")]
 
 

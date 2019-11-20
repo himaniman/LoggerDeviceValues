@@ -50,12 +50,14 @@ namespace LoggerDeviceValues
         public enum StateMachine
         {
             Init,
+            NoDataAndNoConnDev,
             NowNotConnectedDevice,
             HaveConectedDevice,
             BurningFileCurrentDevice,
             Burning,
         };
         public StateMachine GlobalState = StateMachine.Init;
+        public StateMachine GlobalStateStore = StateMachine.Init;
 
         public ConcurrentQueue<string> System_serialDataQueue = new ConcurrentQueue<string>();
         public ConcurrentQueue<byte[]> System_HIDDataQueue = new ConcurrentQueue<byte[]>();
@@ -432,7 +434,7 @@ namespace LoggerDeviceValues
             MainChartModel.Axes.Add(xAxis);
             //MainChartModel.Axes.Add(new LinearAxis());
 
-            GlobalState = StateMachine.NowNotConnectedDevice;
+            GlobalState = StateMachine.NoDataAndNoConnDev;
             //var s1 = new LineSeries
             //{
             //    StrokeThickness = 1,
@@ -663,7 +665,9 @@ namespace LoggerDeviceValues
                 System_LogMessage("Устройство " + DeviceManager_Obj.Devices[IDSession].DeviceName.ToString() + " перестало отвечать", 'R', IDSession);
             }
             if (!flagHaveActiveDev && GlobalState == StateMachine.HaveConectedDevice) GlobalState = StateMachine.NowNotConnectedDevice;
-            if (flagHaveActiveDev && GlobalState == StateMachine.NowNotConnectedDevice) GlobalState = StateMachine.HaveConectedDevice;
+            if (flagHaveActiveDev && (GlobalState == StateMachine.NowNotConnectedDevice || GlobalState == StateMachine.NoDataAndNoConnDev)) GlobalState = StateMachine.HaveConectedDevice;
+            if (!flagHaveActiveDev && Global_SelectedDevice == -1) GlobalState = StateMachine.NoDataAndNoConnDev;
+            else Button_SaveCurrentData.IsEnabled = true;
             if (GlobalState == StateMachine.Burning)
             {
                 if (Global_CounterForAllDev > -1)
@@ -948,6 +952,7 @@ namespace LoggerDeviceValues
                     else CurrentItem.IsSelected = false;
                 }
                 if (!HaveSelectedDev && ListView_CurrentDev.Items.Count>0) { (ListView_CurrentDev.Items[0] as ListBoxItem).IsSelected = true; Global_SelectedDevice = Int32.Parse((ListView_CurrentDev.Items[0] as ListBoxItem).Tag.ToString()); }
+                if (ListView_CurrentDev.Items.Count == 0) Global_SelectedDevice = -1;
             }
             else
             {
@@ -1086,8 +1091,8 @@ namespace LoggerDeviceValues
                 Button_SaveCurrentData.IsEnabled = true;
                 TextBlock_ETA.Text = "Время / Измерения до окончания";
                 ProgressBar_Status.Value = 0;
-                GlobalState = StateMachine.HaveConectedDevice;
-                UpdateBlockUI();
+                GlobalState = GlobalStateStore;
+                System_UpdateLifeInfo(DateTime.MinValue, IDSession: -1);
             }
         }
 
@@ -1107,6 +1112,7 @@ namespace LoggerDeviceValues
                         DateTime.Now.ToString("dd.MM.yyyy HH-mm-ss") + " " + DeviceManager_Obj.Devices[Int32.Parse(CurrentItem.Tag.ToString())].DeviceName.ToString();
                     if (saveFileDialog.ShowDialog() == true)
                     {
+                        GlobalStateStore = GlobalState;
                         GlobalState = StateMachine.BurningFileCurrentDevice;
                         UpdateBlockUI();
 
@@ -1221,7 +1227,7 @@ namespace LoggerDeviceValues
                 GlobalState = StateMachine.HaveConectedDevice;
                 UpdateBlockUI();
                 RadioButton_TimerOrQtyGroup_Change(null, null);
-                System_UpdateLifeInfo(DateTime.MaxValue, IDSession: Global_SelectedDevice);
+                System_UpdateLifeInfo(DateTime.MinValue, IDSession: Global_SelectedDevice);
                 TabItem_CurrentMeasurment.IsSelected = true;
                 Button_FileBurnStart.Content = "Начать запись";
                 ProgressBar_Status.Value = 0;
@@ -1289,11 +1295,14 @@ namespace LoggerDeviceValues
 
         private void Button_RemoveData_Click(object sender, RoutedEventArgs e)
         {
-            if (DeviceManager_Obj.Devices[Global_SelectedDevice].active == false)
+            if (DeviceManager_Obj.Devices.ContainsKey(Global_SelectedDevice))
             {
-                DeviceManager_Obj.RemoveAndDisonnectDevice(Global_SelectedDevice);
-                ListBox_Log.Items.Remove(Global_SelectedDevice);
-                RadioButton_ChangeAciveDevice_Checked(null, null);
+                if (DeviceManager_Obj.Devices[Global_SelectedDevice].active == false)
+                {
+                    DeviceManager_Obj.RemoveAndDisonnectDevice(Global_SelectedDevice);
+                    ListBox_Log.Items.Remove(Global_SelectedDevice);
+                    RadioButton_ChangeAciveDevice_Checked(null, null);
+                }
             }
         }
 
@@ -1307,10 +1316,25 @@ namespace LoggerDeviceValues
         {
             switch (GlobalState)
             {
+                case StateMachine.NoDataAndNoConnDev:
+                    GroupBox_Burning.IsEnabled = false;
+                    Button_SaveCurrentData.IsEnabled = true;
+                    TabItem_Settings.IsEnabled = true;
+                    RadioButton_StartMeasure.IsEnabled = false;
+                    RadioButton_PauseMeasure.IsEnabled = false;
+                    Button_DisableDriver.IsEnabled = false;
+                    Button_ConfigDevice.IsEnabled = false;
+                    Button_RemoveData.IsEnabled = false;
+                    Button_SaveCurrentData.IsEnabled = false;
+                    break;
                 case StateMachine.NowNotConnectedDevice:
                     GroupBox_Burning.IsEnabled = false;
                     Button_SaveCurrentData.IsEnabled = true;
                     TabItem_Settings.IsEnabled = true;
+                    RadioButton_StartMeasure.IsEnabled = false;
+                    RadioButton_PauseMeasure.IsEnabled = false;
+                    Button_DisableDriver.IsEnabled = false;
+                    Button_ConfigDevice.IsEnabled = false;
                     break;
                 case StateMachine.HaveConectedDevice:
                     GroupBox_Burning.IsEnabled = true;
@@ -1342,6 +1366,7 @@ namespace LoggerDeviceValues
                     RadioButton_StartMeasure.IsEnabled = false;
                     RadioButton_PauseMeasure.IsEnabled = false;
                     Button_DisableDriver.IsEnabled = false;
+                    Button_ConfigDevice.IsEnabled = false;
                     Button_RemoveData.IsEnabled = false;
                     break;
             }
@@ -1379,7 +1404,18 @@ namespace LoggerDeviceValues
 
         private void Button_ConfigDevice_Click(object sender, RoutedEventArgs e)
         {
-
+            if (DeviceManager_Obj.Devices.ContainsKey(Global_SelectedDevice))
+            {
+                foreach(Driver_VirtualDevice currentDriver in DeviceManager_Obj.Drivers_VirtualDevice)
+                {
+                    if (currentDriver.DriverID == DeviceManager_Obj.Devices[Global_SelectedDevice].IDTargetDriver)
+                    {
+                        WindowDriver_Virtual WindowDriver_Virtual1 = new WindowDriver_Virtual(currentDriver);
+                        WindowDriver_Virtual1.ShowDialog();
+                    }
+                }
+                
+            }            
         }
 
 

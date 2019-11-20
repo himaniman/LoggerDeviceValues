@@ -33,7 +33,7 @@ namespace LoggerDeviceValues
         public int CounterMeasure = 0;
         public int CounterMeasureForBurning = 0;
         public List<int> MillsBetweenMeasure;
-        public DateTime PastMeasure;
+        public DateTime PastMeasure = DateTime.MinValue;
         public int IDTargetDriver;
         public bool active = true;
         public bool ignore = false;

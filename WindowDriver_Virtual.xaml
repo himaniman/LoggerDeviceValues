@@ -1,0 +1,41 @@
+﻿<Window x:Class="LoggerDeviceValues.WindowDriver_Virtual"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LoggerDeviceValues"
+        mc:Ignorable="d"
+        Title="Настройки Virtual" Height="400" Width="540">
+    <DockPanel>
+        <Image DockPanel.Dock="Left" Source="UT71D.png" Margin="20,20,20,20"/>
+        <StackPanel Orientation="Vertical" DockPanel.Dock="Right" Margin="10,0,0,0">
+            <GroupBox Header="Настройка терморезистора">
+                <StackPanel>
+                    <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                        Позволяет производить измерения температуры с помощью NTC в режиме мультиметра "Сопротивление" по формуле Стейнхарта — Харта.
+                        Если включен, то данные в омах автоматически преобразуются в соответствующую температуру в градусах Цельсия. 
+                    </TextBlock>
+                    <DockPanel Margin="5,5,5,5">
+                        <TextBox Name="TextBlock_CoefA" DockPanel.Dock="Left" MinWidth="120"/>
+                        <TextBlock DockPanel.Dock="Right" Text="Коэффицент А" Margin="10,0,0,0"/>
+                    </DockPanel>
+                    <DockPanel Margin="5,5,5,5">
+                        <TextBox Name="TextBlock_CoefB" DockPanel.Dock="Left" MinWidth="120"/>
+                        <TextBlock DockPanel.Dock="Right" Text="Коэффицент B" Margin="10,0,0,0"/>
+                    </DockPanel>
+                    <DockPanel Margin="5,5,5,5">
+                        <TextBox Name="TextBlock_CoefC" DockPanel.Dock="Left" MinWidth="120"/>
+                        <TextBlock DockPanel.Dock="Right" Text="Коэффицент C" Margin="10,0,0,0"/>
+                    </DockPanel>
+                    <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                        Расчет коэффицентов онлайн:
+                        <Hyperlink NavigateUri="https://rusefi.com/Steinhart-Hart.html" RequestNavigate="Hyperlink_RequestNavigate">
+                            https://rusefi.com/Steinhart-Hart.html
+                        </Hyperlink>        
+                    </TextBlock>
+                    <CheckBox Name="CheckBox_EnableConvertOm2C" Margin="5,5,5,5" Content="Включить преобразование Om -> C" Click="CheckBox_EnableConvertOm2C_Click"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </DockPanel>
+</Window>

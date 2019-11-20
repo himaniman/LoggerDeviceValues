@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
-        Title="Мультиаппаратный логгер данных v0.45" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
+        Title="Мультиаппаратный логгер данных v0.46" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
     <Window.Resources>
         <Canvas x:Key="Work" Width="28" Height="15">
             <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
@@ -98,7 +98,6 @@
                                 <Button Grid.Row="2" Grid.ColumnSpan="2" Name="Button_FileBurnStart" Content="Начать запись" Margin="5,5,5,5" Click="Button_FileBurnStart_Click" Background="#FFDDDDDD"/>
                                 <ProgressBar Grid.Row="3" Grid.ColumnSpan="2" Margin="5,5,5,5" Minimum="0" Maximum="100" Value="0" Name="ProgressBar_Status"/>
                                 <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Name="TextBlock_ETA" Margin="5,10,5,10" Text="Время/Измерения до окончания" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                <Button Grid.Row="4" Grid.ColumnSpan="2" Name="Button_SaveCurrentData" Content="Сохранить текущую сессию в файл" Margin="5,5,5,5" Click="Button_SaveCurrentData_Click"/>
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Сообщения" Margin="5,5,5,5">
@@ -166,7 +165,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" GroupName="SkipData" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" IsEnabled="False" Click="RadioButton_ChangeSkipDataAction">
+                            <RadioButton Grid.Column="0" Name="RadioButton_StartMeasure" Margin="0,0,3,0" GroupName="SkipData" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" IsEnabled="False" Click="RadioButton_ChangeSkipDataAction">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Получать данные   "/>
                                     <Canvas x:Name="appbar_control_fastforward_variant" Width="28" Height="15">
@@ -174,15 +173,15 @@
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
-                            <RadioButton Grid.Column="1" Name="RadioButton_PauseMeasure" GroupName="SkipData" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False" Click="RadioButton_ChangeSkipDataAction">
+                            <RadioButton Grid.Column="1" Name="RadioButton_PauseMeasure" Margin="3,0,3,0" GroupName="SkipData" Style="{StaticResource {x:Type ToggleButton}}" IsEnabled="False" Click="RadioButton_ChangeSkipDataAction">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Пауза   "/>
                                     <Canvas x:Name="appbar_pause" Width="16" Height="16">
-                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#FFEEE000" Data="F1 M 26.9167,23.75L 33.25,23.75L 33.25,52.25L 26.9167,52.25L 26.9167,23.75 Z M 42.75,23.75L 49.0833,23.75L 49.0833,52.25L 42.75,52.25L 42.75,23.75 Z " RenderTransformOrigin="0.5,0.5"/>
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="Yellow" Data="F1 M 26.9167,23.75L 33.25,23.75L 33.25,52.25L 26.9167,52.25L 26.9167,23.75 Z M 42.75,23.75L 49.0833,23.75L 49.0833,52.25L 42.75,52.25L 42.75,23.75 Z " RenderTransformOrigin="0.5,0.5"/>
                                     </Canvas>
                                 </StackPanel>
                             </RadioButton>
-                            <Button Grid.Column="2" Name="Button_DisableDriver" IsEnabled="False" Click="Button_DisableDriver_Click">
+                            <Button Grid.Column="2" Name="Button_DisableDriver" IsEnabled="False" Click="Button_DisableDriver_Click" Margin="3,0,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Отлючить устройство   "/>
                                     <Canvas x:Name="appbar_close" Width="16" Height="16">
@@ -202,8 +201,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Name="Button_ConfigDevice" IsEnabled="False" Click="Button_ConfigDevice_Click">
+                            <Button Grid.Column="0" Name="Button_ConfigDevice" IsEnabled="False" Click="Button_ConfigDevice_Click" Margin="0,0,3,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Настроить устройство   "/>
                                     <Canvas x:Name="appbar_cog" Width="16" Height="16">
@@ -218,7 +218,17 @@
                                     </Canvas>
                                 </StackPanel>
                             </Button>
-                            <Button Grid.Column="1" Name="Button_RemoveData" IsEnabled="False" Click="Button_RemoveData_Click">
+                            <Button Grid.Column="1" Name="Button_SaveCurrentData" IsEnabled="False" Click="Button_SaveCurrentData_Click" Margin="3,0,3,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Сессию в файл   "/>
+                                    <Canvas Width="16" Height="16">
+                                        <Path Width="16" Height="16" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 20.5833,20.5833L 55.4167,20.5833L 55.4167,55.4167L 45.9167,55.4167L 
+                                              45.9167,44.3333L 30.0833,44.3333L 30.0833,55.4167L 20.5833,55.4167L 20.5833,20.5833 Z M 33.25,55.4167L 33.25,50.6667L 39.5833,50.6667L 
+                                              39.5833,55.4167L 33.25,55.4167 Z M 26.9167,23.75L 26.9167,33.25L 49.0833,33.25L 49.0833,23.75L 26.9167,23.75 Z " RenderTransformOrigin="0.5,0.5"/>
+                                    </Canvas>
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="2" Name="Button_RemoveData" IsEnabled="False" Click="Button_RemoveData_Click" Margin="3,0,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Удалить данные   "/>
                                     <Canvas Width="16" Height="16">
@@ -367,7 +377,7 @@
                             <GroupBox Header="Настройки отображения данных в реальном времени" Margin="5,0,5,0">
                                 <StackPanel Orientation="Vertical">
                                     <DockPanel>
-                                        <ComboBox DockPanel.Dock="Right" Name="ComboBox_SizeGraph" SelectedIndex="0" HorizontalContentAlignment="Center" Width="70">
+                                        <ComboBox DockPanel.Dock="Right" Name="ComboBox_SizeGraph" SelectedIndex="1" HorizontalContentAlignment="Center" Width="70">
                                             <ComboBoxItem Content="200" Tag="200"/>
                                             <ComboBoxItem Content="1K" Tag="1000"/>
                                             <ComboBoxItem Content="5K" Tag="5000"/>
