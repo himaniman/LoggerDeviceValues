@@ -54,14 +54,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LoggerDeviceValues.exe" size="389064">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LoggerDeviceValues.exe" size="393672">
       <assemblyIdentity name="LoggerDeviceValues" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>8KVaovxPqZx4l2lCzi7Ldl8D+BIbi7W/Eg25/reYY44=</dsig:DigestValue>
+        <dsig:DigestValue>W/zWRiyZfhke4J9lUBPI+j9uiiF/jLaG3HIHA83RnGs=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

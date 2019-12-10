@@ -14,10 +14,8 @@ namespace LoggerDeviceValues
         //DeviceManager.NewValueDelegate DelegateForNewValue;
         ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
         public int DriverID;
-        public bool ModeConvertOm2C = false;
-        public double CoefA = 1;
-        public double CoefB = 1;
-        public double CoefC = 1;
+
+        public ConventerNTC ConventerNTC_obj = new ConventerNTC();
 
         public Driver_VirtualDevice(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
         {
@@ -48,7 +46,7 @@ namespace LoggerDeviceValues
             Random rnd = new Random();
             decimal value;
             LabDevice.DataTypes type = LabDevice.DataTypes.Abstract;
-            int mul = rnd.Next(-4, 4);
+            int mul = 1;//rnd.Next(-4, 4);
             int ofs = rnd.Next(1, 1000);
             int del = rnd.Next(100, 300);
             int counterForDisable = 50;
@@ -69,12 +67,12 @@ namespace LoggerDeviceValues
                 //if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
                 //if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
 
-                if (type == LabDevice.DataTypes.Resistance && ModeConvertOm2C == true)
+                if (type == LabDevice.DataTypes.Resistance && ConventerNTC_obj.mode != ConventerNTC.ConversionModes.None)
                 {
-                    value = ((decimal)(1 / (CoefA + CoefB * Math.Log((double)value) + CoefC * Math.Pow(Math.Log((double)value), 3))) - 32) * ((decimal)5/(decimal)9);
+                    value = ConventerNTC_obj.Convert((double)value);
                     type = LabDevice.DataTypes.Temperature;
                 }
-                if (ModeConvertOm2C == false) type = LabDevice.DataTypes.Resistance;
+                if (ConventerNTC_obj.mode == ConventerNTC.ConversionModes.None) type = LabDevice.DataTypes.Resistance;
 
                 //type = LabDevice.DataTypes.Voltage;
                 //this.Dispatcher.Invoke(() => DelegateForNewValue(value));
@@ -82,21 +80,26 @@ namespace LoggerDeviceValues
                 QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now , DrvID = DriverID, RAW = BitConverter.ToString((BitConverter.GetBytes((double)value))) });
                 //System_serialDataQueue.Enqueue(buffer);
                 //защищенный вызов лаб девайса
-                
+                if (ConventerNTC_obj.mode != ConventerNTC.ConversionModes.None) type = LabDevice.DataTypes.Resistance;
             }
         }
 
-        public void EnableConversionOm2C(double _A, double _B, double _C)
+        public void EnableConversionStHr(double _A, double _B, double _C)
         {
-            CoefA = _A;
-            CoefB = _B;
-            CoefC = _C;
-            ModeConvertOm2C = true;
+            ConventerNTC_obj.CoefA = _A;
+            ConventerNTC_obj.CoefA = _B;
+            ConventerNTC_obj.CoefA = _C;
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.StHr;
         }
 
-        public void DisableConversionOm2C()
+        public void EnableConversionNTCB57861S0103F040()
         {
-            ModeConvertOm2C = false;
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.B57861S0103F040;
+        }
+
+        public void DisableConversionTemperature()
+        {
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.None;
         }
     }
 }

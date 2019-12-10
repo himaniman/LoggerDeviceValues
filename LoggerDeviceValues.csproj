@@ -118,6 +118,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ConventerNTC.cs" />
     <Compile Include="WindowDriver_Virtual.xaml.cs">
       <DependentUpon>WindowDriver_Virtual.xaml</DependentUpon>
     </Compile>
