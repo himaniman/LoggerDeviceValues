@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf" 
         mc:Ignorable="d"
-        Title="Мультиаппаратный логгер данных v0.46" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
+        Title="Мультиаппаратный логгер измерений v0.51" Height="600" Width="900" Background="White" Closing="Window_Shutdown">
     <Window.Resources>
         <Canvas x:Key="Work" Width="28" Height="15">
             <Path Width="28" Height="15" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" Fill="#FF00DF00" Data="F1 M 19,25L 35.75,38L 19,51L 19,25 Z M 41,25L 57.75,38L 41,51L 41,25 Z " RenderTransformOrigin="0.5,0.5"/>
@@ -230,7 +230,7 @@
                             </Button>
                             <Button Grid.Column="2" Name="Button_RemoveData" IsEnabled="False" Click="Button_RemoveData_Click" Margin="3,0,0,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Удалить данные   "/>
+                                    <TextBlock Text="Удалить сессию   "/>
                                     <Canvas Width="16" Height="16">
                                         <Path Width="12" Height="16" Stretch="Fill" Fill="OrangeRed" Data="F1 M 25.3333,23.75L 50.6667,23.75C 51.5411,23.75 51.8541,27.3125 51.8541,27.3125L 
                                               24.1458,27.3125C 24.1458,27.3125 24.4589,23.75 25.3333,23.75 Z M 35.625,19.7917L 40.375,19.7917C 40.8122,19.7917 41.9583,20.9378 41.9583,21.375C 
@@ -300,6 +300,8 @@
                     <StackPanel>
                         <TextBlock Name="TextBlock_Statistics_FreqMeasure" Text="Выборок/минуту" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         <TextBlock Name="TextBlock_Statistics_CounterMeasure" Text="Максимум" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Время на измерения" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Всего выборок" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </StackPanel>
                     <!--<Grid Margin="10,10,10,10">
                         <Grid.RowDefinitions>
@@ -345,6 +347,7 @@
                         <StackPanel>
                             <GroupBox Header="Настройка записываемых данных в файл" Margin="5,0,5,0">
                                 <DockPanel>
+                                    <TextBlock DockPanel.Dock="Top" Text="Пример записываемой строки в файл" TextAlignment="Center" Margin="0,5,0,0"/>
                                     <Border DockPanel.Dock="Top" Margin="5,5,5,5" BorderBrush="Black" BorderThickness="1">
                                         <TextBlock Name="TextBlock_BurnString" Margin="5,5,5,5" HorizontalAlignment="Center" Text="TEXT"/>
                                     </Border>

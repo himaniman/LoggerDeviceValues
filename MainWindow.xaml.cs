@@ -542,6 +542,8 @@ namespace LoggerDeviceValues
             //DeviceManager_Obj.ConnectToDeviceThroughInterface("Virtual-", "");
             UpdateBlockUI();
             CheckBox_BurnStringChange(null, null);
+
+            if (Properties.Settings.Default.FolderForSave != "") TextBox_FilePath.Text = Properties.Settings.Default.FolderForSave;
         }
 
         public delegate void EventNewValueDelegate(DeviceManager.MeasureStruct measure, int IDSession);
@@ -1414,7 +1416,16 @@ namespace LoggerDeviceValues
                         WindowDriver_Virtual1.ShowDialog();
                     }
                 }
-                
+
+                foreach (Driver_UT71D currentDriver in DeviceManager_Obj.Drivers_UT71D)
+                {
+                    if (currentDriver.DriverID == DeviceManager_Obj.Devices[Global_SelectedDevice].IDTargetDriver)
+                    {
+                        WindowDriver_UT71D WindowDriver_UT71D1 = new WindowDriver_UT71D(currentDriver);
+                        WindowDriver_UT71D1.ShowDialog();
+                    }
+                }
+
             }            
         }
 
@@ -1496,6 +1507,8 @@ namespace LoggerDeviceValues
 
         private void Window_Shutdown(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (TextBox_FilePath.Text != Environment.GetFolderPath(Environment.SpecialFolder.Desktop)) Properties.Settings.Default.FolderForSave = TextBox_FilePath.Text;
+            Properties.Settings.Default.Save();
             //foreach(Driver_UT71D CurrentDevice in DeviceManager.Devices_UT71D)
             //{
             //    CurrentDevice.Disconnect();

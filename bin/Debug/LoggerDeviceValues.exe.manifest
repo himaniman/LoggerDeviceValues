@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
   <asmv1:assemblyIdentity name="LoggerDeviceValues.exe" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
+  <description asmv2:iconFile="MainIconAVESTA.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="LoggerDeviceValues" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="LoggerDeviceValues" version="0.51.0.0" language="neutral" processorArchitecture="msil" />
     <commandLine file="LoggerDeviceValues.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -14,16 +15,16 @@
       </applicationRequestMinimum>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
         <!--
-          Параметры манифеста UAC
-          Если нужно изменить уровень контроля учетных записей Windows, замените 
-          узел requestedExecutionLevel одним из следующих значений.
+          UAC Manifest Options
+          If you want to change the Windows User Account Control level replace the
+          requestedExecutionLevel node with one of the following.
 
         <requestedExecutionLevel  level="asInvoker" uiAccess="false" />
         <requestedExecutionLevel  level="requireAdministrator" uiAccess="false" />
         <requestedExecutionLevel  level="highestAvailable" uiAccess="false" />
 
-        Если нужно использовать виртуализацию файлов и реестра для обратной
-             совместимости, удалите узел requestedExecutionLevel.
+         If you want to utilize File and Registry Virtualization for backward
+         compatibility then delete the requestedExecutionLevel node.
     -->
         <requestedExecutionLevel level="asInvoker" uiAccess="false" />
       </requestedPrivileges>
@@ -54,14 +55,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LoggerDeviceValues.exe" size="393672">
-      <assemblyIdentity name="LoggerDeviceValues" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LoggerDeviceValues.exe" size="429568">
+      <assemblyIdentity name="LoggerDeviceValues" version="0.51.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>W/zWRiyZfhke4J9lUBPI+j9uiiF/jLaG3HIHA83RnGs=</dsig:DigestValue>
+        <dsig:DigestValue>Cm0ryZz1I8JHFYDIRN+57aPDWOLmGer1qDWdgC2iAfo=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -293,13 +294,22 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="LoggerDeviceValues.exe.config" size="1084">
+  <file name="LoggerDeviceValues.exe.config" size="1200">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>25MbYT/h6LgPeoQKws4QGbMtF7O1MCCl0I4Rz2HvbMo=</dsig:DigestValue>
+      <dsig:DigestValue>CMDbYp0N2L72Z8wyf+v1tHIhKFDTXeLSK/WOh6TXKlI=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="MainIconAVESTA.ico" size="12758">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>fCEPQWnCsvhpKh4bYBtXOmf3snsb6GjKyoE8r4Votlw=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoggerDeviceValues", "LoggerDeviceValues.csproj", "{476F8E89-ED4E-44B6-93C3-065645213A37}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup_LoggerDeviceValuers", "..\Setup_LoggerDeviceValuers\Setup_LoggerDeviceValuers.vdproj", "{F35B42B7-2363-4199-B7A2-988408BF028B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{476F8E89-ED4E-44B6-93C3-065645213A37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{476F8E89-ED4E-44B6-93C3-065645213A37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{476F8E89-ED4E-44B6-93C3-065645213A37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F35B42B7-2363-4199-B7A2-988408BF028B}.Debug|Any CPU.ActiveCfg = Debug
+		{F35B42B7-2363-4199-B7A2-988408BF028B}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

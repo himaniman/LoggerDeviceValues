@@ -86,3 +86,5 @@ Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.exe.manifest
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\LoggerDeviceValues.application
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\WindowDriver_Virtual.g.cs
 Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\WindowDriver_Virtual.baml
+Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\WindowDriver_UT71D.g.cs
+Q:\GitSynchFolder\LoggerDeviceValues\obj\Debug\WindowDriver_UT71D.baml

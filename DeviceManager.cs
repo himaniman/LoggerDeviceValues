@@ -127,7 +127,7 @@ namespace LoggerDeviceValues
                         {
                             //случай если была пауза продилась как 3 раза * стандартное значение задержки между данными
                             //то значит надо создать новый лаб девайс чтобы новые данные если прийдут то лягут туды
-                            if (Devices[i].MillsBetweenMeasure.Count >= 10  && !Devices[i].ignore)
+                            if (Devices[i].MillsBetweenMeasure.Count >= 10  && !Devices[i].ignore && QueueNewValues.IsEmpty)
                             {
                                 if (Devices[i].PastMeasure +
                                     (TimeSpan.FromMilliseconds(Devices[i].MillsBetweenMeasure.Average() * 3) > TimeSpan.FromSeconds(2) ?

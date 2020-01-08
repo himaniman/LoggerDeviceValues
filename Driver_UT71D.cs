@@ -40,6 +40,8 @@ namespace LoggerDeviceValues
         ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
         public int DriverID;
 
+        public ConventerNTC ConventerNTC_obj = new ConventerNTC();
+
         //LabDevice.NewValueDelegate DelegateForNewValue;
 
         public Driver_UT71D(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
@@ -80,6 +82,11 @@ namespace LoggerDeviceValues
                     LabDevice.DataTypes type;
                     if (TryParceData(HIDBuffer, out value, out type, out valueRAW))
                     {
+                        if (type == LabDevice.DataTypes.Resistance && ConventerNTC_obj.mode != ConventerNTC.ConversionModes.None)
+                        {
+                            value = ConventerNTC_obj.Convert((double)value);
+                            type = LabDevice.DataTypes.Temperature;
+                        }
                         QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now, DrvID = DriverID, RAW = valueRAW });
                         //Debug.WriteLine(valueRAW, type.ToString());
                         //System_NewValue(value, type, valueRAW);
@@ -162,6 +169,37 @@ namespace LoggerDeviceValues
             //{
             //    return false;
             //}
+        }
+
+        public void EnableConversionStHr(double _A, double _B, double _C)
+        {
+            ConventerNTC_obj.CoefA = _A;
+            ConventerNTC_obj.CoefA = _B;
+            ConventerNTC_obj.CoefA = _C;
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.StHr;
+        }
+
+        public void EnableConversionB25(double _R25, double _B25)
+        {
+            ConventerNTC_obj.CoefR25 = _R25;
+            ConventerNTC_obj.CoefB25 = _B25;
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.B25;
+        }
+
+        public void EnableConversionRT8016(double _R25)
+        {
+            ConventerNTC_obj.R25 = _R25;
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.RT8016;
+        }
+
+        public void EnableConversionNTCB57861S0103F040()
+        {
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.B57861S0103F040;
+        }
+
+        public void DisableConversionTemperature()
+        {
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.None;
         }
 
         public static int IndexOf(byte[] array, byte[] pattern, int offset)

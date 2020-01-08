@@ -10,26 +10,38 @@ namespace LoggerDeviceValues
 {
     public class Driver_VirtualDevice
     {
+        public enum TypesSignal
+        {
+            line, sin, noize
+        };
+        
         public Thread ThreadRead_Discriptor;
-        //DeviceManager.NewValueDelegate DelegateForNewValue;
         ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
         public int DriverID;
 
-        public ConventerNTC ConventerNTC_obj = new ConventerNTC();
+        public TypesSignal TypeSignal = TypesSignal.line;
+        public LabDevice.DataTypes type;
+        public double MeasPerMin;
+        public double CoefMinY;
+        public double CoefMaxY;
+        public double CoefPulseWith;
+        public double CoefSinOfsPulse;
 
         public Driver_VirtualDevice(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
         {
             QueueNewValues = _QueueNewValuesGlobal;
-            //DelegateForNewValue = _valueDelegate;
             DriverID = _id;
+
+            Random rnd = new Random();
+            MeasPerMin = rnd.Next(60,150);
+            CoefMinY = rnd.Next(10, 40);
+            CoefMaxY = rnd.Next(50, 100);
+            CoefPulseWith = rnd.Next(4000, 6000);
+            CoefSinOfsPulse = rnd.Next(50, 150);
+
+            LabDevice.DataTypes type = (LabDevice.DataTypes)rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length);
         }
-        //public Driver_VirtualDevice(Driver_VirtualDevice oldDriver)
-        //{
-        //    DelegateForNewValue = oldDriver.DelegateForNewValue;
-        //    oldDriver.DelegateForNewValue = null;
-        //    ThreadRead_Discriptor = oldDriver.ThreadRead_Discriptor;
-        //    oldDriver.Disconnect();
-        //}
+
         public bool Connect()
         {
             ThreadRead_Discriptor = new Thread(ReadDataVirtual);
@@ -44,62 +56,40 @@ namespace LoggerDeviceValues
         void ReadDataVirtual()
         {
             Random rnd = new Random();
-            decimal value;
-            LabDevice.DataTypes type = LabDevice.DataTypes.Abstract;
-            int mul = 1;//rnd.Next(-4, 4);
-            int ofs = rnd.Next(1, 1000);
-            int del = rnd.Next(100, 300);
-            int counterForDisable = 50;
+            decimal value = 0;
+
             while (true)
             {
-                Thread.Sleep(del);
-                //counterForDisable--;
-                //if (counterForDisable < 25 && counterForDisable > 5)
-                //{
-                //    type = LabDevice.DataTypes.Abstract;
-                //    continue;
-                //}
-                //if (counterForDisable == 0) break;
+                Thread.Sleep((int)(1000 / (MeasPerMin/60)));
+                double time = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMilliseconds + CoefSinOfsPulse;
+                
 
-                value = ((decimal)Math.Sin(((double)DateTime.Now.Ticks + ofs*100000) / (63700* ofs)) * (decimal)Math.Pow(10,mul)) + (decimal)(ofs * Math.Pow(10, mul)); //(decimal)rnd.Next(10, 50)/10;
-
-                if (type == LabDevice.DataTypes.Abstract) type = LabDevice.DataTypes.Resistance;
-                //if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
-                //if (type == LabDevice.DataTypes.Abstract) type = (LabDevice.DataTypes)Enum.GetValues(typeof(LabDevice.DataTypes)).GetValue(rnd.Next(Enum.GetValues(typeof(LabDevice.DataTypes)).Length));
-
-                if (type == LabDevice.DataTypes.Resistance && ConventerNTC_obj.mode != ConventerNTC.ConversionModes.None)
+                if (TypeSignal == TypesSignal.line)
                 {
-                    value = ConventerNTC_obj.Convert((double)value);
-                    type = LabDevice.DataTypes.Temperature;
+                    if (time % CoefPulseWith <= CoefPulseWith / 2)
+                    {
+                        value = (decimal)(((CoefMinY - CoefMaxY) / (CoefPulseWith / 2)) * (time % CoefPulseWith - CoefPulseWith / 2) + CoefMinY);
+                    }
+                    else
+                    {
+                        value = (decimal)(-((CoefMinY - CoefMaxY) / (CoefPulseWith / 2)) * (time % CoefPulseWith - CoefPulseWith / 2) + CoefMinY);
+                    }
                 }
-                if (ConventerNTC_obj.mode == ConventerNTC.ConversionModes.None) type = LabDevice.DataTypes.Resistance;
 
-                //type = LabDevice.DataTypes.Voltage;
-                //this.Dispatcher.Invoke(() => DelegateForNewValue(value));
-                //DelegateForNewValue?.Invoke(value, type, DriverID);
+                if (TypeSignal == TypesSignal.sin)
+                {
+                    value = (decimal)((Math.Sin(((time % CoefPulseWith) / CoefPulseWith) * 2*Math.PI)/2 + 0.5) * Math.Abs(CoefMinY-CoefMaxY) + CoefMinY); //(decimal)rnd.Next(10, 50)/10;
+                }
+
+                if (TypeSignal == TypesSignal.noize)
+                {
+                    value = (decimal)(rnd.NextDouble() * Math.Abs(CoefMinY - CoefMaxY) + CoefMinY);
+                }
+
                 QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now , DrvID = DriverID, RAW = BitConverter.ToString((BitConverter.GetBytes((double)value))) });
-                //System_serialDataQueue.Enqueue(buffer);
-                //защищенный вызов лаб девайса
-                if (ConventerNTC_obj.mode != ConventerNTC.ConversionModes.None) type = LabDevice.DataTypes.Resistance;
+
             }
         }
 
-        public void EnableConversionStHr(double _A, double _B, double _C)
-        {
-            ConventerNTC_obj.CoefA = _A;
-            ConventerNTC_obj.CoefA = _B;
-            ConventerNTC_obj.CoefA = _C;
-            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.StHr;
-        }
-
-        public void EnableConversionNTCB57861S0103F040()
-        {
-            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.B57861S0103F040;
-        }
-
-        public void DisableConversionTemperature()
-        {
-            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.None;
-        }
     }
 }

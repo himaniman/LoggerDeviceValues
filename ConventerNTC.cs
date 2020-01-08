@@ -47,6 +47,9 @@ namespace LoggerDeviceValues
                 case ConversionModes.StHr:
                     Temperature = ((decimal)(1 / (CoefA + CoefB * Math.Log(Resistance) + CoefC * Math.Pow(Math.Log(Resistance), 3))) - 32) * ((decimal)5 / (decimal)9);
                     break;
+                case ConversionModes.B25:
+                    Temperature = (decimal)(((CoefB25 * 298.15) / (CoefB25 + 298.15 * Math.Log(Resistance / CoefR25))) - 273.15);
+                    break;
                 case ConversionModes.RT8016:
                     
                     for (int i=0;i< CoefRT8016.GetLength(0); i++)

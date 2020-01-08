@@ -21,17 +21,22 @@ namespace LoggerDeviceValues
     /// </summary>
     public partial class WindowDriver_Virtual : Window
     {
-        Driver_VirtualDevice TargerDriver;
+        Driver_VirtualDevice TargetDriver;
+        bool NTCDataValidate = true;
 
         public WindowDriver_Virtual(Driver_VirtualDevice _driver)
         {
-            TargerDriver = _driver;
+            TargetDriver = _driver;
             InitializeComponent();
-            if (TargerDriver.ConventerNTC_obj.mode == ConventerNTC.ConversionModes.None) ComboBox_NTCMethod.SelectedIndex = 0;
-            if (TargerDriver.ConventerNTC_obj.mode == ConventerNTC.ConversionModes.StHr) ComboBox_NTCMethod.SelectedIndex = 1;
-            if (TargerDriver.ConventerNTC_obj.mode == ConventerNTC.ConversionModes.B25) ComboBox_NTCMethod.SelectedIndex = 2;
-            if (TargerDriver.ConventerNTC_obj.mode == ConventerNTC.ConversionModes.RT8016) ComboBox_NTCMethod.SelectedIndex = 3;
-            if (TargerDriver.ConventerNTC_obj.mode == ConventerNTC.ConversionModes.B57861S0103F040) ComboBox_NTCMethod.SelectedIndex = 4;
+            foreach (LabDevice.DataTypes type in Enum.GetValues(typeof(LabDevice.DataTypes))) ComboBox_DataType.Items.Add(type.ToString());
+
+            ComboBox_Waveform.SelectedIndex = (int)TargetDriver.TypeSignal;
+
+            IntegerUpDown_MeasPerMin.Value = TargetDriver.MeasPerMin;
+            IntegerUpDown_CoefMinY.Value = TargetDriver.CoefMinY;
+            IntegerUpDown_CoefMaxY.Value = TargetDriver.CoefMaxY;
+            IntegerUpDown_CoefPulseWith.Value = TargetDriver.CoefPulseWith;
+            IntegerUpDown_CoefSinOfsPulse.Value = TargetDriver.CoefSinOfsPulse;
         }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
@@ -40,59 +45,32 @@ namespace LoggerDeviceValues
             e.Handled = true;
         }
 
-        private void CheckBox_EnableConvertOm2C_Click(object sender, RoutedEventArgs e)
+        private void ComboBox_Waveform_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //if ((bool)CheckBox_EnableConvertOm2C.IsChecked)
-            //{
-            //    double A = 0, B = 0, C = 0;
-            //    double.TryParse(TextBlock_CoefA.Text, out A);
-            //    double.TryParse(TextBlock_CoefA.Text, out B);
-            //    double.TryParse(TextBlock_CoefA.Text, out C);
 
-            //    TargerDriver.EnableConversionOm2C(A, B, C);
-            //}
-            //else
-            //{
-            //    TargerDriver.DisableConversionOm2C();
-            //}
-        }
-
-        private void ComboBox_NTCMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //TextBlock_R25.Text = TargerDriver.ConventerNTC_obj.R25.ToString();
-
-            //TextBlock_CoefR25.Text = TargerDriver.ConventerNTC_obj.CoefR25.ToString();
-            //TextBlock_CoefB25.Text = TargerDriver.ConventerNTC_obj.CoefB25.ToString();
-
-            //TextBlock_CoefA.Text = TargerDriver.ConventerNTC_obj.CoefA.ToString();
-            //TextBlock_CoefB.Text = TargerDriver.ConventerNTC_obj.CoefB.ToString();
-            //TextBlock_CoefC.Text = TargerDriver.ConventerNTC_obj.CoefC.ToString();
         }
 
         private void Button_Apply_Click(object sender, RoutedEventArgs e)
         {
-            switch (ComboBox_NTCMethod.SelectedIndex)
-            {
-                case 0:
-                    TargerDriver.DisableConversionTemperature();
-                    break;
-                case 1:
-                    double A, B, C;
-                    if (double.TryParse(TextBlock_CoefA.Text, out A) && double.TryParse(TextBlock_CoefB.Text, out B) && double.TryParse(TextBlock_CoefC.Text, out C))
-                    {
-                        TargerDriver.EnableConversionStHr(A, B, C);
-                    }
-                    else
-                    {
-                        if (double.TryParse(TextBlock_CoefA.Text, out A)) TextBlock_CoefA.Background = new SolidColorBrush(Colors.Red);
-                        if (double.TryParse(TextBlock_CoefB.Text, out B)) TextBlock_CoefB.Background = new SolidColorBrush(Colors.Red);
-                        if (double.TryParse(TextBlock_CoefC.Text, out C)) TextBlock_CoefC.Background = new SolidColorBrush(Colors.Red);
-                    }
-                    break;
-                case 4:
-                    TargerDriver.EnableConversionNTCB57861S0103F040();
-                    break;
-            }
+            TargetDriver.type = (LabDevice.DataTypes)ComboBox_DataType.SelectedIndex;
+            TargetDriver.TypeSignal = (Driver_VirtualDevice.TypesSignal)ComboBox_Waveform.SelectedIndex;
+            TargetDriver.MeasPerMin = (double)IntegerUpDown_MeasPerMin.Value;
+            TargetDriver.CoefMinY = (double)IntegerUpDown_CoefMinY.Value;
+            TargetDriver.CoefMaxY = (double)IntegerUpDown_CoefMaxY.Value;
+            TargetDriver.CoefPulseWith = (double)IntegerUpDown_CoefPulseWith.Value;
+            TargetDriver.CoefSinOfsPulse = (double)IntegerUpDown_CoefSinOfsPulse.Value;
         }
+
+        private void Button_Ok_Click(object sender, RoutedEventArgs e)
+        {
+            Button_Apply_Click(null, null);
+            Close();
+        }
+
+        private void Button_Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
     }
 }

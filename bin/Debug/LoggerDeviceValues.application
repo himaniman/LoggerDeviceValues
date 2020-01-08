@@ -7,14 +7,14 @@
     <framework targetVersion="4.7.2" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="LoggerDeviceValues.exe.manifest" size="17680">
+    <dependentAssembly dependencyType="install" codebase="LoggerDeviceValues.exe.manifest" size="17993">
       <assemblyIdentity name="LoggerDeviceValues.exe" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>h/DiiD4ddVXc07A13ROTZEfP2/Eb7pcHweonvWm8gHQ=</dsig:DigestValue>
+        <dsig:DigestValue>ykh2Hov2GgllERA2JbZrl/kXvzD/Xnp/CYp4KOGxWBY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

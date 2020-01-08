@@ -1,0 +1,114 @@
+﻿<Window x:Class="LoggerDeviceValues.WindowDriver_UT71D"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LoggerDeviceValues"
+        mc:Ignorable="d"
+        Title="Настройки UT71D" Height="500" Width="540">
+    <DockPanel>
+        <Image DockPanel.Dock="Left" Source="UT71D.png" Margin="20,20,20,20" MaxWidth="150" VerticalAlignment="Top"/>
+        <DockPanel Margin="10,0,0,0">
+            <Grid DockPanel.Dock="Bottom" Margin="0,10,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Name="Button_Ok" Content="ОК" Margin="10,0,10,0" Click="Button_Ok_Click"/>
+                <Button Grid.Column="1" Name="Button_Cancel" Content="Отмена" Margin="10,0,10,0" Click="Button_Cancel_Click"/>
+                <Button Grid.Column="2" Name="Button_Apply" Content="Применить" Margin="10,0,10,0" Click="Button_Apply_Click"/>
+            </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Top" >
+                    <GroupBox Header="Настройка терморезистора">
+                        <Expander Header="{Binding ElementName=ComboBox_NTCMethod, Path=SelectedItem.Content}">
+                            <StackPanel>
+                                <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                        Позволяет производить измерения температуры с помощью NTC в режиме мультиметра "Сопротивление" по выбранной формуле.
+                        Если включен, то значение сопротивления автоматически преобразуюется в соответствующую температуру в градусах Цельсия.
+                                </TextBlock>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Text="Метод вычисления" Margin="5,5,5,5"/>
+                                    <ComboBox Name="ComboBox_NTCMethod" Margin="5,5,5,5" SelectedIndex="0" SelectionChanged="ComboBox_NTCMethod_SelectionChanged">
+                                        <ComboBoxItem Content="Выключено"/>
+                                        <ComboBoxItem Content="Стейнхарт — Харт"/>
+                                        <ComboBoxItem Content="Коэффицент B25"/>
+                                        <ComboBoxItem Content="R/T Характеристика №8016"/>
+                                        <ComboBoxItem Content="NTC B57861S0103F040"/>
+                                    </ComboBox>
+                                </DockPanel>
+
+                                <StackPanel Visibility="Visible" Name="StackPanel_CalcStHt">
+                                    <DockPanel Margin="5,5,5,5">
+                                        <TextBox Name="TextBlock_CoefA" DockPanel.Dock="Left" MinWidth="120" TextChanged="TextBox_NTCDataChange"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="Коэффицент А" Margin="10,0,0,0"/>
+                                    </DockPanel>
+                                    <DockPanel Margin="5,5,5,5">
+                                        <TextBox Name="TextBlock_CoefB" DockPanel.Dock="Left" MinWidth="120" TextChanged="TextBox_NTCDataChange"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="Коэффицент B" Margin="10,0,0,0"/>
+                                    </DockPanel>
+                                    <DockPanel Margin="5,5,5,5">
+                                        <TextBox Name="TextBlock_CoefC" DockPanel.Dock="Left" MinWidth="120" TextChanged="TextBox_NTCDataChange"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="Коэффицент C" Margin="10,0,0,0"/>
+                                    </DockPanel>
+                                    <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                        Расчет коэффицентов онлайн:
+                        <Hyperlink NavigateUri="https://rusefi.com/Steinhart-Hart.html" RequestNavigate="Hyperlink_RequestNavigate">
+                            https://rusefi.com/Steinhart-Hart.html
+                        </Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Visibility="Visible" Name="StackPanel_CalcB25">
+                                    <DockPanel Margin="5,5,5,5">
+                                        <TextBox Name="TextBlock_CoefB25" DockPanel.Dock="Left" MinWidth="120" TextChanged="TextBox_NTCDataChange"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="B&#x2082;&#x2085;" Margin="10,0,0,0"/>
+                                    </DockPanel>
+                                    <DockPanel Margin="5,5,5,5">
+                                        <TextBox Name="TextBlock_CoefR25" DockPanel.Dock="Left" MinWidth="120" TextChanged="TextBox_NTCDataChange"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="R&#x2082;&#x2085;" Margin="10,0,0,0"/>
+                                    </DockPanel>
+                                    <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                        Значение температуры будет вычилсено из Rt=R&#x2082;&#x2085;*exp(B&#x2082;&#x2085;*(1/T - 1/298.15))
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Visibility="Visible" Name="StackPanel_Calc8016">
+                                    <DockPanel Margin="5,5,5,5">
+                                        <TextBox Name="TextBlock_R25" DockPanel.Dock="Left" MinWidth="120" TextChanged="TextBox_NTCDataChange"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="R&#x2082;&#x2085;" Margin="10,0,0,0"/>
+                                    </DockPanel>
+                                    <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                                Значения для коэффицента R/T и &#945;&#x2093; будут взяты из таблицы для R/T характеристики №8016 для текущего диапазона<LineBreak/>
+                                Значение температуры будет вычилсено из <LineBreak/> Rt = Rt&#x2093; * exp((&#945;&#x2093;/100) * (T&#x2093;+273.15)^2 * 
+                                (1 / (T+273.15) - 1 / (T&#x2093;+273.15)))<LineBreak/>
+                                Rt&#x2093; = Coef(Rt/R&#x2082;&#x2085;) * R&#x2082;&#x2085;<LineBreak/>
+                                <Hyperlink NavigateUri="https://www.electrokit.com/uploads/productfile/41012/0900766b80731548.pdf" RequestNavigate="Hyperlink_RequestNavigate">
+                                [Источник]
+                                </Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Visibility="Visible" Name="StackPanel_CalcB57861S0103F040">
+                                    <TextBlock Margin="5,5,5,5" TextWrapping="Wrap">
+                                Преобразование будет произведено на основании даташита<LineBreak/>
+                                <Hyperlink NavigateUri="https://www.tdk-electronics.tdk.com/inf/50/db/ntc/NTC_Mini_sensors_S861.pdf" RequestNavigate="Hyperlink_RequestNavigate">
+                                [Источник]
+                                </Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+                    </GroupBox>
+                    <GroupBox Header="Поведение при перегрузке (OL)" IsEnabled="False">
+                        <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="False">
+                            <RadioButton Content="Игнорировать" Margin="5,5,5,5"/>
+                            <RadioButton Content="Интерпритировать как 0" Margin="5,5,5,5"/>
+                        </WrapPanel>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </DockPanel>
+</Window>
