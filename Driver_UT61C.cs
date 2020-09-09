@@ -1,11 +1,13 @@
 ﻿using HidSharp;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace LoggerDeviceValues
 {
@@ -18,10 +20,18 @@ namespace LoggerDeviceValues
         public HidStream HIDStream_Discriptor;
         public LabDevice TargetLabDevice;
 
-        public Driver_UT61C(LabDevice _LinkLabDevice)
+        ConcurrentQueue<DeviceManager.MeasureStruct> QueueNewValues;
+        public int DriverID;
+
+        public ConventerNTC ConventerNTC_obj = new ConventerNTC();
+
+        public Driver_UT61C(ConcurrentQueue<DeviceManager.MeasureStruct> _QueueNewValuesGlobal, int _id)
         {
+            QueueNewValues = _QueueNewValuesGlobal;
+            DriverID = _id;
             LocalBuffer = new byte[1];
-            TargetLabDevice = _LinkLabDevice;
+
+            ConventerNTC_obj.mode = ConventerNTC.ConversionModes.B25;
         }
 
         public bool Connect(HidDevice _HidDevice)
@@ -52,17 +62,25 @@ namespace LoggerDeviceValues
                     decimal value;
                     string valueRAW;
                     LabDevice.DataTypes type;
+
                     if (TryParceData(HIDBuffer, out value, out type, out valueRAW))
                     {
+                        if (type == LabDevice.DataTypes.Resistance && ConventerNTC_obj.mode != ConventerNTC.ConversionModes.None)
+                        {
+                            value = ConventerNTC_obj.Convert((double)value);
+                            type = LabDevice.DataTypes.Temperature;
+                        }
+                        QueueNewValues.Enqueue(new DeviceManager.MeasureStruct { Val = value, Typ = type, TS = DateTime.Now, DrvID = DriverID, RAW = valueRAW });
                         //Debug.WriteLine(valueRAW, type.ToString());
                         //System_NewValue(value, type, valueRAW);
-                        ////TargetLabDevice.NewValue(value);
+                        //TargetLabDevice.NewValue(value);
+                        //DelegateForNewValue(value);
                     }
                 }
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.ToString());
+                MessageBox.Show(ex.ToString());
                 return;
             }
         }

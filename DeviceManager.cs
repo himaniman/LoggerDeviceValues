@@ -25,7 +25,7 @@ namespace LoggerDeviceValues
         //public List<Thread> ReadThreads;
         HidDevice[] HidDeviceList;
         //static public List<Driver_UT71D> Devices_UT71D = new List<Driver_UT71D>();
-        //public List<Driver_UT61C> Devices_UT61C = new List<Driver_UT61C>();
+        public List<Driver_UT61C> Devices_UT61C = new List<Driver_UT61C>();
         MainWindow.EventNewValueDelegate MainWindowEventNewValue;
         public Thread ThreadAwaitData_Discriptor;
 
@@ -258,13 +258,14 @@ namespace LoggerDeviceValues
                     Drivers_UT71D.Last().Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
                     Devices[NewIDSession].IDTargetDriver = Drivers_UT71D.Last().DriverID;
                 }
-                //if (_Device == LabDevice.SupportedDevices.UT61C.ToString())
-                //{
-                //    //Devices_UT71D.check for equals может до этого мы уже подключались, обработать
-                //    Devices.Add(new LabDevice(LabDevice.SupportedDevices.UT61C, LabDevice.DataTypes.Temperature));
-                //    Devices_UT61C.Add(new Driver_UT61C(Devices.ElementAt(Devices.Count - 1))); //сюда бросить ид девайса для того чтобы он знал куда бросать данные при приеме
-                //    Devices_UT61C.ElementAt(Devices_UT61C.Count - 1).Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
-                //}
+                if (_Device == LabDevice.SupportedDevices.UT61C.ToString())
+                {
+                    //Devices_UT71D.check for equals может до этого мы уже подключались, обработать
+                    Devices.Add(NewIDSession, new LabDevice(LabDevice.SupportedDevices.UT61C, LabDevice.DataTypes.Temperature));
+                    Devices_UT61C.Add(new Driver_UT61C(QueueNewValues, DriversIDMax++)); //сюда бросить ид девайса для того чтобы он знал куда бросать данные при приеме
+                    Devices_UT61C.ElementAt(Devices_UT61C.Count - 1).Connect(HidDeviceList[Int32.Parse(_Interface.Split(' ')[0])]);
+                    Devices[NewIDSession].IDTargetDriver = Devices_UT61C.Last().DriverID;
+                }
 
             }
                 
